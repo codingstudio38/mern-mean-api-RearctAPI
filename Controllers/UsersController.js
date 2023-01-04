@@ -76,7 +76,7 @@ async function CreateNew(req, resp) {
         if (!password) {
             return resp.status(200).json({ 'status': 400, 'message': 'password required.' });
         }
-        
+
         const email_check = await UsersModel.find({ email: { $eq: email } }).countDocuments();
         if (email_check > 0) {
             return resp.status(200).json({ "status": 400, "message": "Email Id already exist. Try different." });
@@ -109,7 +109,7 @@ async function CreateNew(req, resp) {
                                 return resp.status(200).json({ "status": 400, "message": "Failed to move file.", "error": err });
                             });
                         } else {
-                            let updateIS = updateIs(id, { "photo": file_name, updated_at: Date.now() });
+                            let updateIS = updateIs(id, { "photo": file_name, updated_at: new Date() });
                             updateIS.then((data) => {
                                 let useris = findUser(id);
                                 useris.then((user) => {
@@ -166,7 +166,7 @@ async function UpdateUser(req, resp) {
     }
     try {
 
-        
+
         const email_check = await UsersModel.find({ $and: [{ _id: { $ne: new mongodb.ObjectId(id) } }, { email: { $eq: email } }] }).countDocuments();
         if (email_check > 0) {
             return resp.status(200).json({ "status": 400, "message": "Email Id already exist. Try different." });
@@ -187,9 +187,9 @@ async function UpdateUser(req, resp) {
                 } else {
                     oldfile_sms = removeoldFiles(`${user_files}/${oldphoto}`);
                     if (!password) {
-                        updated_data = { "name": name, "phone": phone, "email": email, "photo": file_name, "updated_at": Date.now() };
+                        updated_data = { "name": name, "phone": phone, "email": email, "photo": file_name, "updated_at": new Date() };
                     } else {
-                        updated_data = { "name": name, "phone": phone, "email": email, "password": pass, "photo": file_name, "updated_at": Date.now() };
+                        updated_data = { "name": name, "phone": phone, "email": email, "password": pass, "photo": file_name, "updated_at": new Date() };
                     }
                     let updateIS = updateIs(id, updated_data);
                     updateIS.then((data) => {
@@ -202,9 +202,9 @@ async function UpdateUser(req, resp) {
             })
         } else {
             if (!password) {
-                updated_data = { "name": name, "phone": phone, "email": email, "updated_at": Date.now() };
+                updated_data = { "name": name, "phone": phone, "email": email, "updated_at": new Date() };
             } else {
-                updated_data = { "name": name, "phone": phone, "email": email, "password": pass, updated_at: Date.now() };
+                updated_data = { "name": name, "phone": phone, "email": email, "password": pass, updated_at: new Date() };
             }
             let updateIS = updateIs(id, updated_data);
             updateIS.then((data) => {
@@ -290,10 +290,27 @@ async function DownloadFile(req, resp) {
     }
 
 }
+async function UserChatList(req, resp) {
+    try {
+        var { name } = req.query;
+        if (!name) {
+            let data = await UsersModel.find().select({ _id: 1, name: 1, photo: 1 }).sort({ name: 1 });
+            return resp.status(200).json({ "status": 200, "message": "Success", "data": data });
+        }
+        if (name == "") {
+            let data = await UsersModel.find().select({ _id: 1, name: 1, photo: 1 }).sort({ name: 1 });
+            return resp.status(200).json({ "status": 200, "message": "Success", "data": data });
+        }
+        let data = await UsersModel.aggregate([{ $match: { 'name': { $regex: new RegExp(name), $options: "i" } } }, { $project: { _id: 1, name: 1, photo: 1 } }]);
+        return resp.status(200).json({ "status": 200, "message": "Success", "data": data });
+    } catch (error) {
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+    }
+
+}
 
 
 
 
 
-
-module.exports = { Allusers, CreateNew, UpdateUser, DeleteUser, UserDetail, UserLogin, UserLogout, DownloadFile };
+module.exports = { Allusers, CreateNew, UpdateUser, DeleteUser, UserDetail, UserLogin, UserLogout, DownloadFile, UserChatList };

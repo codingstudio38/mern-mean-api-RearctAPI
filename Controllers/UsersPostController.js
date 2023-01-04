@@ -2,8 +2,10 @@ const UsersModel = require('../Models/UsersModel');
 const UsersPostModel = require('../Models/UsersPostModel');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
 const xl_files = path.join(__dirname, './../public/xl-files');
 const export_xl = path.join(__dirname, './../public/export-xl');
+
 const mongodb = require('mongodb');
 const readXlsxFile = require('read-excel-file/node');
 const xlsx = require('xlsx');
@@ -61,14 +63,14 @@ async function UsersPostList(req, resp) {
         if (!page) {
             page = 1;
         }
-        if (page == 0) {
+        if (page <= 0) {
             page == 1;
         }
         if (!size) {
             size = 5;
         }
-        if (size == 0) {
-            size == 1;
+        if (size <= 0) {
+            size == 5;
         }
         page = parseInt(page);
         limit = parseInt(size);
@@ -92,7 +94,7 @@ async function UsersPostList(req, resp) {
                             foreignField: '_id',
                             as: 'user_field',
                         }
-                    }, 
+                    },
                     { $unwind: '$user_field' },
                     {
                         "$project": {
@@ -226,4 +228,5 @@ async function SendMail(req, resp) {
 }
 
 
-module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail };
+
+module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, UploadMultiples };

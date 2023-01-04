@@ -9,11 +9,11 @@ const UsersSchema = new mongooseConnect.Schema({
     photo: { type: String, required: false, trim: true, default: null },
     password: { type: String, required: true },
     tokens: [{
-        token: { 
+        token: {
             type: String, required: true
         }
     }],
-    created_at: { type: Date, required: true, default: Date.now() },
+    created_at: { type: Date, required: true, default: new Date() },//Date.now()
     updated_at: { type: Date, required: false, default: null },
 });
 UsersSchema.methods.generateAuthToken = async function () {
