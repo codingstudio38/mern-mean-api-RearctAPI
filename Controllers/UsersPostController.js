@@ -229,4 +229,4 @@ async function SendMail(req, resp) {
 
 
 
-module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, UploadMultiples };
+module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail };

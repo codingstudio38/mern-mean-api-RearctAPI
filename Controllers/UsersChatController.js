@@ -52,7 +52,7 @@ async function SaveChat(req, resp) {
                                 return resp.status(200).json({ "status": 400, "message": "Failed to move file.", "error": err });
                             });
                         } else {
-                            let updateIS = updateIs(id, { "chat_file": file_name, updated_at: new Date() });
+                            let updateIS = updateIs(id, { "chat_file": file_name, updated_at: Date.now() });
                             updateIS.then((data) => {
                                 return resp.status(200).json({ "status": 200, "message": "Message has been successfully sended.", "update_data": data, "data": result, "lastid": id });
                             });
@@ -155,7 +155,7 @@ async function ChatList(req, resp) {
 
 async function FindChat(req, resp) {
     try {
-        var { chatid } = req.query;
+        var { chatid, from_user, to_user } = req.query;
         if (!chatid) {
             return resp.status(200).json({ "status": 400, "message": "chat id required" });
         }
@@ -164,8 +164,10 @@ async function FindChat(req, resp) {
         }
 
         let chat = await UsersChatModel.findOne({ '_id': new mongodb.ObjectId(chatid) }).select({ from_user: 1, to_user: 1, message: 1, chat_file: 1, bookmark: 1, sender: 1, created_at: 1 });
-
-        return resp.status(200).json({ "status": 200, "message": "Success", "chat": chat });
+        let total = await UsersChatModel.find({
+            $and: [{ 'from_user': new mongodb.ObjectId(from_user) }, { 'to_user': new mongodb.ObjectId(to_user) }]
+        }).countDocuments();
+        return resp.status(200).json({ "status": 200, "message": "Success", "chat": chat, "total": total });
     } catch (error) {
         return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
     }

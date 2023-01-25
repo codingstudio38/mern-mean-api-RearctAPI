@@ -5,7 +5,7 @@ const UsersPostSchema = new mongooseConnect.Schema({
     title: { type: String, required: false, trim: true, default: null },
     type: { type: String, required: false, trim: true, default: null },
     content: { type: String, required: false, trim: true, default: null },
-    created_at: { type: Date, required: true, default: new Date() },//Date.now()
+    created_at: { type: Date, required: true, default: Date.now() },//Date.now()new Date()
     updated_at: { type: Date, required: false, default: null },
 });
 UsersPostSchema.plugin(mongoosePaginate);

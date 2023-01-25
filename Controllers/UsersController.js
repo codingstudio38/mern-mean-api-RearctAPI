@@ -109,7 +109,7 @@ async function CreateNew(req, resp) {
                                 return resp.status(200).json({ "status": 400, "message": "Failed to move file.", "error": err });
                             });
                         } else {
-                            let updateIS = updateIs(id, { "photo": file_name, updated_at: new Date() });
+                            let updateIS = updateIs(id, { "photo": file_name, updated_at: Date.now() });
                             updateIS.then((data) => {
                                 let useris = findUser(id);
                                 useris.then((user) => {
@@ -187,9 +187,9 @@ async function UpdateUser(req, resp) {
                 } else {
                     oldfile_sms = removeoldFiles(`${user_files}/${oldphoto}`);
                     if (!password) {
-                        updated_data = { "name": name, "phone": phone, "email": email, "photo": file_name, "updated_at": new Date() };
+                        updated_data = { "name": name, "phone": phone, "email": email, "photo": file_name, "updated_at": Date.now() };
                     } else {
-                        updated_data = { "name": name, "phone": phone, "email": email, "password": pass, "photo": file_name, "updated_at": new Date() };
+                        updated_data = { "name": name, "phone": phone, "email": email, "password": pass, "photo": file_name, "updated_at": Date.now() };
                     }
                     let updateIS = updateIs(id, updated_data);
                     updateIS.then((data) => {
@@ -202,9 +202,9 @@ async function UpdateUser(req, resp) {
             })
         } else {
             if (!password) {
-                updated_data = { "name": name, "phone": phone, "email": email, "updated_at": new Date() };
+                updated_data = { "name": name, "phone": phone, "email": email, "updated_at": Date.now() };
             } else {
-                updated_data = { "name": name, "phone": phone, "email": email, "password": pass, updated_at: new Date() };
+                updated_data = { "name": name, "phone": phone, "email": email, "password": pass, updated_at: Date.now() };
             }
             let updateIS = updateIs(id, updated_data);
             updateIS.then((data) => {
@@ -288,8 +288,8 @@ async function DownloadFile(req, resp) {
     } else {
         resp.status(404).json({ status: 404, msg: "Downloads directory not found" })
     }
-
 }
+
 async function UserChatList(req, resp) {
     try {
         var { name } = req.query;

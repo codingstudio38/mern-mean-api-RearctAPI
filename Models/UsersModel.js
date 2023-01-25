@@ -13,7 +13,7 @@ const UsersSchema = new mongooseConnect.Schema({
             type: String, required: true
         }
     }],
-    created_at: { type: Date, required: true, default: new Date() },//Date.now()
+    created_at: { type: Date, required: true, default: Date.now() },//new Date()
     updated_at: { type: Date, required: false, default: null },
 });
 UsersSchema.methods.generateAuthToken = async function () {
