@@ -1,6 +1,6 @@
 const mongooseConnect = require('../Config/MongooseConfig');
 const UsersChat = new mongooseConnect.Schema({
-    from_user: { type: 'ObjectId', required: true, trim: true },
+    from_user: { type: 'ObjectId', required: true, trim: true },//mongoose.Schema.Types.ObjectId
     to_user: { type: 'ObjectId', required: true, trim: true },
     message: { type: String, required: false, trim: true, default: null },
     chat_file: { type: String, required: false, trim: true, default: null },
