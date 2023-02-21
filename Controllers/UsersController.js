@@ -85,8 +85,8 @@ async function CreateNew(req, resp) {
         if (phone_check > 0) {
             return resp.status(200).json({ "status": 400, "message": "Phone no already exist. Try different.", "total": phone_check });
         }
-        let salt = await bcrypt.genSalt(10);
-        let password_ = await bcrypt.hash(password, salt);
+        let salt = await bcrypt.genSalt(10);//genSaltSync(10)
+        let password_ = await bcrypt.hash(password, salt);//hashSync(password,salt);
         let NewUser = new UsersModel({
             name: name,
             phone: phone,
