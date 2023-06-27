@@ -265,7 +265,7 @@ async function UserLogout(req, resp) {
     try {
         // req.user.tokens = req.user.tokens.filter((items, index) => {
         //     return items.token !== req.token;
-        // })
+        // }) 
         req.user.tokens = [];
         await req.user.save();
         return resp.status(200).json({ "status": 200, "message": "Successfully logged out." });

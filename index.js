@@ -17,7 +17,7 @@ const wsServer = new webSocketServer({
     httpServer: server,
     autoAcceptConnections: false
 });
-const clients = {};
+const clients = {}; 
 
 var GetUniqueID = () => {
     const now = new Date();
