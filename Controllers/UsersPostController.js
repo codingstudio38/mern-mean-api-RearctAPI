@@ -186,6 +186,51 @@ async function UsersPost(req, resp) {
     }
 }
 
+async function GetPostById(req, resp) {
+    let { rowid } = req.params;//req.query;
+    try {
+        let total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) }).countDocuments()
+        let data = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) });
+        if (total > 0) {
+            data = data[0];
+        } else {
+            data = {};
+        }
+        return resp.status(200).json({ "status": 200, "message": "Success", "error": '', 'result': data, "total": total });
+    } catch (error) {
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+    }
+}
+
+async function DeletePostById(req, resp) {
+    let { rowid } = req.params;//req.query;
+    try {
+        let total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) }).countDocuments()
+        let data = await UsersPostModel.deleteOne({ '_id': new mongodb.ObjectId(rowid) });
+        return resp.status(200).json({ "status": 200, "message": "Successfully deleted", "error": '', 'result': data, "total": total });
+    } catch (error) {
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+    }
+}
+
+
+async function SaveUsersPost(req, resp) {
+    let { user, title, type, content } = req.body;
+    try {
+        let NewPost = new UsersPostModel({
+            userid: user,
+            title: title,
+            type: type,
+            content: content,
+        }).save(function (err, result) {
+            if (err) return resp.status(200).json({ "status": 400, "message": "Failed to save..!!", "error": err });
+            return resp.status(200).json({ "status": 200, "message": "Post sah been successfully saved.", "error": '', 'result': result });
+        });
+    } catch (error) {
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+    }
+}
+
 // https://www.grapecity.com/blogs/how-to-generate-excel-spreadsheets-in-nodejs
 // https://pspdfkit.com/blog/2021/how-to-generate-pdf-from-html-with-nodejs/
 
@@ -229,4 +274,4 @@ async function SendMail(req, resp) {
 
 
 
-module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail };
+module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, SaveUsersPost, GetPostById, DeletePostById };

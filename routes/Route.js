@@ -25,6 +25,8 @@ routeapp.get('/user', Auth, UsersController.UserDetail);
 
 routeapp.get('/users-list', Auth, UsersController.Allusers);
 
+routeapp.get('/all-users', Auth, UsersController.UsersList);
+
 routeapp.delete('/user', Auth, UsersController.DeleteUser);
 
 routeapp.get('/users-chat-list', Auth, UsersController.UserChatList);
@@ -32,6 +34,12 @@ routeapp.get('/users-chat-list', Auth, UsersController.UserChatList);
 routeapp.get('/users/post-list', Auth, UsersPostController.UsersPostList);
 
 routeapp.get('/users/post', Auth, UsersPostController.UsersPost);
+
+routeapp.post('/users/save-post', Auth, UsersPostController.SaveUsersPost);
+
+routeapp.get('/users/post-byid/:rowid', Auth, UsersPostController.GetPostById);
+
+routeapp.get('/users/delete-post-byid/:rowid', Auth, UsersPostController.DeletePostById);
 
 routeapp.post('/upload-xl/', Auth, UsersPostController.ImportUserPostExcel);
 

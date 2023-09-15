@@ -43,6 +43,36 @@ async function Allusers(req, resp) {
         });
 }
 
+async function UsersList(req, resp) {
+    try {
+        var { } = req.query;
+        let list;
+        // list = await UsersModel.find({});
+        list = await UsersModel.aggregate().sort({ 'name': 1 })
+            .facet({
+                result: [
+                    // {
+                    //     $match: {'name': { $regex: new RegExp('bidy'), $options: "i" } }
+                    // },
+                    {
+                        "$project": {
+                            "_id": 1,
+                            "name": 1,
+                            "email": 1,
+                            "phone": 1,
+                            "created_at": 1,
+                            "updated_at": 1,
+                        }
+                    }
+                ],
+            })
+            .exec();
+        return resp.status(200).json({ "status": 200, "message": "succes", "error": '', 'list': list[0].result });
+    } catch (error) {
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+    }
+}
+
 async function UserDetail(req, resp) {
     let { id } = req.query;
     if (!id) {
@@ -313,4 +343,4 @@ async function UserChatList(req, resp) {
 
 
 
-module.exports = { Allusers, CreateNew, UpdateUser, DeleteUser, UserDetail, UserLogin, UserLogout, DownloadFile, UserChatList };
+module.exports = { Allusers, CreateNew, UpdateUser, DeleteUser, UserDetail, UserLogin, UserLogout, DownloadFile, UserChatList, UsersList };
