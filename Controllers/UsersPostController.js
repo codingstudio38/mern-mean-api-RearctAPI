@@ -63,13 +63,13 @@ async function UsersPostList(req, resp) {
         if (!page) {
             page = 1;
         }
-        if (page <= 0) {
+        if (parseInt(page) <= 0) {
             page == 1;
         }
         if (!size) {
             size = 5;
         }
-        if (size <= 0) {
+        if (parseInt(size) <= 0) {
             size == 5;
         }
         page = parseInt(page);
