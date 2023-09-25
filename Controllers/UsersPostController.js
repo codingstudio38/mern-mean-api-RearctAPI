@@ -224,13 +224,31 @@ async function SaveUsersPost(req, resp) {
             content: content,
         }).save(function (err, result) {
             if (err) return resp.status(200).json({ "status": 400, "message": "Failed to save..!!", "error": err });
-            return resp.status(200).json({ "status": 200, "message": "Post sah been successfully saved.", "error": '', 'result': result });
+            return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved.", "error": '', 'result': result });
         });
     } catch (error) {
         return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
     }
 }
 
+
+async function UpdateUserPost(req, resp) {
+    let { rowid, userid, title, type, content } = req.body;
+    let dataObj, total;
+    try {
+        dataObj = { 'userid': userid, 'title': title, 'type': type, 'content': content, };
+        total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) }).countDocuments();
+        if (total <= 0) {
+            return resp.status(200).json({ "status": 400, "message": "Record not found.", "error": '', 'result': '', 'total': total });
+        }
+        let update = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(rowid) }, { $set: dataObj }, { new: true, useFindAndModify: false });
+
+        if (!update) return resp.status(200).json({ "status": 400, "message": "Failed to update..!!", "error": update });
+        return resp.status(200).json({ "status": 200, "message": "Post has been successfully updated.", "error": '', 'result': update, 'total': total });
+    } catch (error) {
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+    }
+}
 // https://www.grapecity.com/blogs/how-to-generate-excel-spreadsheets-in-nodejs
 // https://pspdfkit.com/blog/2021/how-to-generate-pdf-from-html-with-nodejs/
 
@@ -274,4 +292,4 @@ async function SendMail(req, resp) {
 
 
 
-module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, SaveUsersPost, GetPostById, DeletePostById };
+module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, SaveUsersPost, GetPostById, DeletePostById, UpdateUserPost };

@@ -41,6 +41,8 @@ routeapp.get('/users/post-byid/:rowid', Auth, UsersPostController.GetPostById);
 
 routeapp.get('/users/delete-post-byid/:rowid', Auth, UsersPostController.DeletePostById);
 
+routeapp.post('/users/update-post', Auth, UsersPostController.UpdateUserPost);
+
 routeapp.post('/upload-xl/', Auth, UsersPostController.ImportUserPostExcel);
 
 routeapp.get('/export-xl/', Auth, UsersPostController.ExportUserPostExcel);
