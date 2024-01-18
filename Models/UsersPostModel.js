@@ -1,7 +1,7 @@
 const mongooseConnect = require('../Config/MongooseConfig');
 const mongoosePaginate = require("mongoose-paginate-v2");
 const UsersPostSchema = new mongooseConnect.Schema({
-    userid: { type: 'ObjectId', required: true, trim: true },
+    userid: { type: 'ObjectId', required: true, trim: true },//mongoose.Schema.Types.ObjectId
     title: { type: String, required: false, trim: true, default: null },
     type: { type: String, required: false, trim: true, default: null },
     content: { type: String, required: false, trim: true, default: null },
