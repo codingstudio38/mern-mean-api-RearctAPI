@@ -45,7 +45,7 @@ routeapp.post('/users/update-post', Auth, UsersPostController.UpdateUserPost);
 
 routeapp.post('/upload-xl/', Auth, UsersPostController.ImportUserPostExcel);
 
-routeapp.get('/export-xl/', UsersPostController.ExportUserPostExcel);
+routeapp.get('/export-xl/', Auth, UsersPostController.ExportUserPostExcel);
 
 routeapp.get('/users/send-mail', Auth, UsersPostController.SendMail);
 
