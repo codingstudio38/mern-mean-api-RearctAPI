@@ -253,25 +253,61 @@ async function UpdateUserPost(req, resp) {
 // https://pspdfkit.com/blog/2021/how-to-generate-pdf-from-html-with-nodejs/
 
 async function ExportUserPostExcel(req, resp) {
-    const allPost = await UsersPostModel.find();
-    const workSheetColumnName = [
-        "USER ID", "TITLE", "TYPE", "CONTENT"
-    ];
-    const workSheetName = "UsersPost";
-    let filename = `${currentDateTime("users-post.xlsx")[0]}.${currentDateTime("users-post.xlsx")[1]}`
-    const filePath = `${export_xl}/${filename}`;
-    const data = allPost.map((post) => {
-        return [post.userid, post.title, post.type, post.content];
-    })
-    const workBook = xlsx.utils.book_new();
-    const workBookData = [
-        workSheetColumnName,
-        ...data
-    ];
-    const workSheet = xlsx.utils.aoa_to_sheet(workBookData);
-    xlsx.utils.book_append_sheet(workBook, workSheet, workSheetName);
-    xlsx.writeFile(workBook, filePath);
-    return resp.status(200).json({ "message": "File successfully generated.", "download": `${export_xl}/${filename}` });
+    try {
+
+
+        const allPost = await UsersPostModel.find();
+        const workSheetColumnName = [
+            "USER ID", "TITLE", "TYPE", "CONTENT"
+        ];
+        const workSheetName = "UsersPost";
+        let filename = `${currentDateTime("users-post.xlsx")[0]}.${currentDateTime("users-post.xlsx")[1]}`
+        const filePath = `${export_xl}/${filename}`;
+        const data = allPost.map((post) => {
+            return [post.userid, post.title, post.type, post.content];
+        })
+        const workBook = xlsx.utils.book_new();
+        const workBookData = [
+            workSheetColumnName,
+            ...data
+        ];
+        const workSheet = xlsx.utils.aoa_to_sheet(workBookData);
+        xlsx.utils.book_append_sheet(workBook, workSheet, workSheetName);
+        xlsx.writeFile(workBook, filePath);
+        if (fs.existsSync(`${filePath}`)) {
+            return resp.download(filePath, filename,
+                (err) => {
+                    if (err) {
+                        return resp.status(200).json({
+                            status: 200,
+                            error: err.message,
+                            message: "Problem downloading the file"
+                        })
+                    } else {
+                        DeleteFile(filePath).then((resdata) => {
+                            // console.log(resdata);//after download response file will be deleted
+                        })
+                    }
+                });
+        } else {
+            resp.status(400).json({ status: 400, msg: "Downloads directory not found", "download": `${export_xl}/${filename}` })
+        }
+        //return resp.status(200).json({ "message": "File successfully generated.", "download": `${export_xl}/${filename}` });
+    } catch (error) {
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
+    }
+}
+
+
+async function DeleteFile(filePath) {
+    if (fs.existsSync(`${filePath}`)) {
+        fs.unlinkSync(`${filePath}`, (err) => {
+            if (err) return { status: 404, msg: "Failed to delete file!!" };
+        });
+        return { status: 200, msg: "success" };
+    } else {
+        return { status: 404, msg: "Downloads directory not found" };
+    }
 }
 
 
