@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <table border="1">
+        <thead>
+            <tr>
+                <td>#Id</td>
+                <td>Title</td>
+                <td>Content</td>
+                <td>Created At</td>
+            </tr>
+        </thead>
+        <tbody>
+            <% posts.forEach(function(item){ %>
+                <tr>
+                    <td><%- item._id %></td>
+                    <td><%- item.title %></td>
+                    <td><%- item.content %></td>
+                    <td><%- item.created_at %></td>
+                </tr>
+                <% }); %>
+        </tbody>
+        <tfoot>
+
+        </tfoot>
+    </table>
+</body>
+
+</html>

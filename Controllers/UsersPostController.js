@@ -5,11 +5,12 @@ const fs = require('fs');
 const multer = require('multer');
 const xl_files = path.join(__dirname, './../public/xl-files');
 const export_xl = path.join(__dirname, './../public/export-xl');
-
+const ejs = require('ejs');
 const mongodb = require('mongodb');
 const readXlsxFile = require('read-excel-file/node');
 const xlsx = require('xlsx');
 const nodemailer = require('nodemailer');
+const pdf = require("pdf-creator-node");
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -290,7 +291,7 @@ async function ExportUserPostExcel(req, resp) {
                     }
                 });
         } else {
-            resp.status(400).json({ status: 400, msg: "Downloads directory not found", "download": `${export_xl}/${filename}` })
+            resp.status(400).json({ status: 400, message: "Downloads directory not found", "download": `${export_xl}/${filename}` })
         }
         //return resp.status(200).json({ "message": "File successfully generated.", "download": `${export_xl}/${filename}` });
     } catch (error) {
@@ -327,5 +328,57 @@ async function SendMail(req, resp) {
 }
 
 
+async function ExportUserPostPDF(req, resp) {
+    try {
+        let data, html, posts, pdfoptions, pdfoutput, filename;
+        posts = await UsersPostModel.find();
+        data = { "posts": posts };
+        // return resp.render("pdfttem", data);
+        html = await ejs.renderFile(path.join(__dirname, "./../views/pdfttem.ejs"), data, "utf8");
+        // html = fs.readFileSync(path.join(__dirname, "./../views/pdfttem.html"), "utf8");
+        pdfoptions = {
+            format: "A4",
+            orientation: "portrait",
+            border: "10mm",
+            header: {
+                height: "45mm",
+                contents: '<div style="text-align: center;">BIDYUT</div>'
+            },
+            footer: {
+                height: "28mm",
+                contents: {
+                    first: 'Cover page',
+                    2: 'Second page', // Any page number is working. 1-based index
+                    default: '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
+                    last: 'Last Page'
+                }
+            }
+        };
+        filename = `${currentDateTime("output.pdf")[0]}.${currentDateTime("output.pdf")[1]}`
+        pdfoutput = {
+            html: html,
+            data: {
+                posts: posts,
+            },
+            path: "./public/pdf-expor/" + filename,
+            type: "pdf", // "stream" || "buffer" || "" ("" defaults to pdf)
+        };
+        pdf.create(pdfoutput, pdfoptions).then((res) => {
+            // console.log(res);
+            return resp.status(200).json({ status: 200, 'pdffile': res, message: 'success' });
+        }).catch((error) => {
+            console.error(error);
+            return resp.status(200).json({ status: 400, 'pdffile': '', message: error });
+        });
+        // console.log(html);
 
-module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, SaveUsersPost, GetPostById, DeletePostById, UpdateUserPost };
+    } catch (error) {
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
+    }
+}
+
+
+
+
+
+module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, SaveUsersPost, GetPostById, DeletePostById, UpdateUserPost, ExportUserPostPDF };

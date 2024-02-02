@@ -6,8 +6,8 @@ const Fileupload = require('express-fileupload');
 var cors = require('cors')
 const express = require('express');
 var bodyParser = require("body-parser");
-
-
+const ejs = require('ejs');
+const views_path = path.join(__dirname, "./views/");
 ////web socket///
 const http = require('http');
 const webSocketServer = require('websocket').server;
@@ -17,7 +17,7 @@ const wsServer = new webSocketServer({
     httpServer: server,
     autoAcceptConnections: false
 });
-const clients = {}; 
+const clients = {};
 
 var GetUniqueID = () => {
     const now = new Date();
@@ -63,6 +63,8 @@ wsServer.on('request', (request) => {
 ////web socket////
 
 const app = express();
+app.set("view engine", "ejs");
+app.set("views", views_path);
 app.use(express.json());
 app.use(Fileupload());
 app.use(cors())
