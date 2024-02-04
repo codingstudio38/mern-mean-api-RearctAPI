@@ -337,20 +337,25 @@ async function ExportUserPostPDF(req, resp) {
         html = await ejs.renderFile(path.join(__dirname, "./../views/pdfttem.ejs"), data, "utf8");
         // html = fs.readFileSync(path.join(__dirname, "./../views/pdfttem.html"), "utf8");
         pdfoptions = {
+            css: {
+                'thead': {
+                    display: 'table-header-group',
+                },
+            },
             format: "A4",
             orientation: "portrait",
-            border: "10mm",
+            border: "4mm",
             header: {
-                height: "45mm",
+                height: "10mm",
                 contents: '<div style="text-align: center;">BIDYUT</div>'
             },
             footer: {
-                height: "28mm",
+                height: "10mm",
                 contents: {
-                    first: 'Cover page',
-                    2: 'Second page', // Any page number is working. 1-based index
-                    default: '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
-                    last: 'Last Page'
+                    first: '<span style="color: black;">{{page}}</span>/<span>{{pages}}</span>',
+                    //2: 'Second Page', // Any page number is working. 1-based index
+                    default: '<span style="color: black;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
+                    last: '<span style="color: black;">{{page}}</span>/<span>{{pages}}</span>'
                 }
             }
         };

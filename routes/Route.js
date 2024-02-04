@@ -8,7 +8,7 @@ const GeneralAuth = require('./../middleware/GeneralAuth');
 
 
 routeapp.get('/', (req, resp) => {
-    resp.json({ 'message': "It's wotking" });
+    resp.status(200).json({ status: 200, 'message': "It's wotking" });
 });
 
 routeapp.get("/download/user/:filename", UsersController.DownloadFile);
