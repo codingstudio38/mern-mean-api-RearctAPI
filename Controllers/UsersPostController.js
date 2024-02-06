@@ -5,6 +5,7 @@ const fs = require('fs');
 const multer = require('multer');
 const xl_files = path.join(__dirname, './../public/xl-files');
 const export_xl = path.join(__dirname, './../public/export-xl');
+const export_pdf = path.join(__dirname, './../public/pdf-export');
 const ejs = require('ejs');
 const mongodb = require('mongodb');
 const readXlsxFile = require('read-excel-file/node');
@@ -330,18 +331,18 @@ async function SendMail(req, resp) {
 
 async function ExportUserPostPDF(req, resp) {
     try {
-        let data, html, posts, pdfoptions, pdfoutput, filename;
+        let data, html, posts, pdfoptions, pdfoutput, filename, filePath;
         posts = await UsersPostModel.find();
         data = { "posts": posts };
         // return resp.render("pdfttem", data);
         html = await ejs.renderFile(path.join(__dirname, "./../views/pdfttem.ejs"), data, "utf8");
         // html = fs.readFileSync(path.join(__dirname, "./../views/pdfttem.html"), "utf8");
         pdfoptions = {
-            css: {
-                'thead': {
-                    display: 'table-header-group',
-                },
-            },
+            // css: {
+            //     'thead': {
+            //         display: 'table-header-group',
+            //     },
+            // },
             format: "A4",
             orientation: "portrait",
             border: "4mm",
@@ -359,21 +360,39 @@ async function ExportUserPostPDF(req, resp) {
                 }
             }
         };
-        filename = `${currentDateTime("output.pdf")[0]}.${currentDateTime("output.pdf")[1]}`
+        filename = `${currentDateTime("output.pdf")[0]}.${currentDateTime("output.pdf")[1]}`;
+        filePath = `${export_pdf}/${filename}`;
         pdfoutput = {
             html: html,
             data: {
                 posts: posts,
             },
-            path: "./public/pdf-expor/" + filename,
+            path: filePath,//"./public/pdf-expor/" + filename,
             type: "pdf", // "stream" || "buffer" || "" ("" defaults to pdf)
         };
         pdf.create(pdfoutput, pdfoptions).then((res) => {
-            // console.log(res);
-            return resp.status(200).json({ status: 200, 'pdffile': res, message: 'success' });
+            // return resp.status(200).json({ status: 200, 'pdffile': res, 'filePath': filePath, message: 'success' });
+            if (fs.existsSync(`${filePath}`)) {
+                return resp.download(filePath, filename,
+                    (err) => {
+                        if (err) {
+                            return resp.status(200).json({
+                                status: 200,
+                                error: err.message,
+                                message: "Problem while downloading the file"
+                            })
+                        } else {
+                            DeleteFile(filePath).then((resdata) => {
+                                // console.log(resdata);//after download response file will be deleted
+                            })
+                        }
+                    });
+            } else {
+                resp.status(400).json({ status: 400, message: "Downloads directory not found", "download": filePath })
+            }
         }).catch((error) => {
             console.error(error);
-            return resp.status(200).json({ status: 400, 'pdffile': '', message: error });
+            return resp.status(200).json({ status: 400, 'pdffile': '', message: error.message });
         });
         // console.log(html);
 
