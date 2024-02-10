@@ -37,10 +37,31 @@ wsServer.on('request', (request) => {
     }
     const connection = request.accept(null, request.origin);
     clients[userID] = connection;
-
+    var wbActiveUser = [];
     connection.on('message', function (message) {
+
         if (message.type === 'utf8') {
             console.log('Received Message: ', message.utf8Data);
+            // let sendUTF = JSON.parse(message.utf8Data);
+            // // wbActiveUser = sendUTF.wbActiveUser
+            // // console.log(sendUTF.wbActiveUser);
+            // if (sendUTF.user != undefined) {
+            //     // console.log("user", sendUTF.user);
+            //     // if (wbActiveUser.length <= 0) {
+            //     //     wbActiveUser.push({ userdb_id: sendUTF.user, wbclient_id: userID });
+            //     // } else {
+            //     //     wbActiveUser.forEach(element => {
+            //     //         console.log("userdb_id", element.userdb_id);
+            //     //         if (sendUTF.user != element.userdb_id) {
+            //     //             console.log(1);
+
+            //     //         }
+            //     //     });
+            //     // }
+            //     wbActiveUser.push({ userdb_id: sendUTF.user, wbclient_id: userID });
+            //     // console.log(wbActiveUser);
+            // }
+            // Object.assign(sendUTF, { wbActiveUser: wbActiveUser });
             for (key in clients) {
                 clients[key].sendUTF(message.utf8Data);
             }
@@ -55,6 +76,8 @@ wsServer.on('request', (request) => {
 
 
     connection.on('close', function (reasonCode, description) {
+        // console.log('reasonCode', reasonCode);
+        // console.log('description', description);
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
     });
 
