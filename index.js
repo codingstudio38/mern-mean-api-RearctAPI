@@ -41,7 +41,7 @@ wsServer.on('request', (request) => {
     connection.on('message', function (message) {
         // Object.assign(message, { wbActiveUser: wbActiveUser })
         if (message.type === 'utf8') {
-            console.log('Received Message: ', message.utf8Data);
+            console.log('Received Message------------------->', message.utf8Data);
             let data = message;
             Object.assign(data, { wsActiveUser: wsActiveUser })
             // console.log(data);
@@ -61,8 +61,9 @@ wsServer.on('request', (request) => {
 
 
     connection.on('close', function (reasonCode, description) {
-        // console.log('reasonCode', reasonCode);
-        // console.log('description', description);
+        console.log('reasonCode-------------->', reasonCode);
+        console.log('description-------------->', description);
+        // console.log('connection', connection);
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
     });
 
