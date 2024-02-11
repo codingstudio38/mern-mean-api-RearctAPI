@@ -21,7 +21,7 @@ const clients = {};
 
 var GetUniqueID = () => {
     const now = new Date();
-    return `${now.getFullYear()}_${now.getMonth() + 1}_${now.getDate()}_${now.getHours()}-${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;
+    return `${now.getFullYear()}_${now.getMonth() + 1}_${now.getDate()}-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;
 }
 function originIsAllowed(origin) {
     return true;
@@ -29,7 +29,7 @@ function originIsAllowed(origin) {
 wsServer.on('request', (request) => {
 
 
-    var userID = GetUniqueID();
+    var userID = `${GetUniqueID()}-${Math.floor(Math.random() * 10000)}`;
     if (originIsAllowed(request.origin) === true) {
         console.log(new Date() + ' Recieved a new connrction from origin ' + request.origin);
     } else {
@@ -37,33 +37,18 @@ wsServer.on('request', (request) => {
     }
     const connection = request.accept(null, request.origin);
     clients[userID] = connection;
-    var wbActiveUser = [];
+    var wsActiveUser = [];
     connection.on('message', function (message) {
-
+        // Object.assign(message, { wbActiveUser: wbActiveUser })
         if (message.type === 'utf8') {
             console.log('Received Message: ', message.utf8Data);
-            // let sendUTF = JSON.parse(message.utf8Data);
-            // // wbActiveUser = sendUTF.wbActiveUser
-            // // console.log(sendUTF.wbActiveUser);
-            // if (sendUTF.user != undefined) {
-            //     // console.log("user", sendUTF.user);
-            //     // if (wbActiveUser.length <= 0) {
-            //     //     wbActiveUser.push({ userdb_id: sendUTF.user, wbclient_id: userID });
-            //     // } else {
-            //     //     wbActiveUser.forEach(element => {
-            //     //         console.log("userdb_id", element.userdb_id);
-            //     //         if (sendUTF.user != element.userdb_id) {
-            //     //             console.log(1);
-
-            //     //         }
-            //     //     });
-            //     // }
-            //     wbActiveUser.push({ userdb_id: sendUTF.user, wbclient_id: userID });
-            //     // console.log(wbActiveUser);
-            // }
-            // Object.assign(sendUTF, { wbActiveUser: wbActiveUser });
+            let data = message;
+            Object.assign(data, { wsActiveUser: wsActiveUser })
+            // console.log(data);
             for (key in clients) {
-                clients[key].sendUTF(message.utf8Data);
+                clients[key].sendUTF(JSON.stringify(data));
+                // clients[key].sendUTF(message);
+                // clients[key].sendUTF(message.utf8Data);// not required
             }
         }
         else if (message.type === 'binary') {
