@@ -8,6 +8,7 @@ const UsersSchema = new mongooseConnect.Schema({
     email: { type: String, required: true, unique: true, trim: true },
     photo: { type: String, required: false, trim: true, default: null },
     password: { type: String, required: true },
+    wsstatus: { type: Number, required: false, default: 0 },
     tokens: [{
         token: {
             type: String, required: true

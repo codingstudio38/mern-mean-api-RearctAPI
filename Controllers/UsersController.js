@@ -324,11 +324,11 @@ async function UserChatList(req, resp) {
     try {
         var { name } = req.query;
         if (!name) {
-            let data = await UsersModel.find().select({ _id: 1, name: 1, photo: 1 }).sort({ name: 1 });
+            let data = await UsersModel.find().select({ _id: 1, name: 1, photo: 1, wsstatus: 1 }).sort({ name: 1 });
             return resp.status(200).json({ "status": 200, "message": "Success", "data": data });
         }
         if (name == "") {
-            let data = await UsersModel.find().select({ _id: 1, name: 1, photo: 1 }).sort({ name: 1 });
+            let data = await UsersModel.find().select({ _id: 1, name: 1, photo: 1, wsstatus: 1 }).sort({ name: 1 });
             return resp.status(200).json({ "status": 200, "message": "Success", "data": data });
         }
         let data = await UsersModel.aggregate([{ $match: { 'name': { $regex: new RegExp(name), $options: "i" } } }, { $project: { _id: 1, name: 1, photo: 1 } }]);
