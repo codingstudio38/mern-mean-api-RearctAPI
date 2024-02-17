@@ -59,6 +59,8 @@ routeapp.get('/current-chat-user', Auth, UsersChatController.CurrentChatUser);
 
 routeapp.get('/find-chat', Auth, UsersChatController.FindChat);
 
+routeapp.post('/update-user-wsstatus', Auth, UsersChatController.UpdateUserWeStatus);
+
 
 
 routeapp.get('*', (req, res) => {

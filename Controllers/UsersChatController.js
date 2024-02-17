@@ -174,5 +174,25 @@ async function FindChat(req, resp) {
 }
 
 
+async function UpdateUserWeStatus(req, resp) {
+    try {
+        var { status, userid } = req.body;
+        if (!status) {
+            return resp.status(200).json({ "status": 400, "message": "status required" });
+        }
+        if (!userid) {
+            return resp.status(200).json({ "status": 400, "message": "id required" });
+        }
 
-module.exports = { SaveChat, ChatList, CurrentChatUser, FindChat };
+        let updateis = await UsersModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(userid) }, {
+            $set: { wsstatus: status }
+        }, { new: true, useFindAndModify: false });
+        return resp.status(200).json({ "status": 200, "message": "Successfully wsstatus updated", "data": updateis });
+    } catch (error) {
+        return resp.status(200).json({ "status": 400, "message": "Failed..!!", "error": error.message });
+    }
+}
+
+
+
+module.exports = { SaveChat, ChatList, CurrentChatUser, FindChat, UpdateUserWeStatus };
