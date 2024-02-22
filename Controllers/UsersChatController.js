@@ -96,7 +96,7 @@ async function CurrentChatUser(req, resp) {
         return resp.status(200).json({ "status": 200, "message": "Success", "from_user_data": from_user_data, "total": total, });
 
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -149,7 +149,7 @@ async function ChatList(req, resp) {
 
         return resp.status(200).json({ "status": 200, "message": "Success", "total": total, "chat_data": chat_data });
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -169,7 +169,7 @@ async function FindChat(req, resp) {
         }).countDocuments();
         return resp.status(200).json({ "status": 200, "message": "Success", "chat": chat, "total": total });
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
 }
 

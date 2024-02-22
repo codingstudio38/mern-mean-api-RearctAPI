@@ -27,6 +27,15 @@ UsersSchema.methods.generateAuthToken = async function () {
         return error;
     }
 }
+UsersSchema.methods.UserNameEmailPhone = async function () {
+    try {
+        let data = await this.findOne()
+            .select({ name: 1, photo: 1, email: 1 }).sort({ name: 1 });
+        return data;
+    } catch (error) {
+        throw error;
+    }
+}
 UsersSchema.plugin(mongoosePaginate);
 const UsersModel = mongooseConnect.model('users', UsersSchema);
 module.exports = UsersModel;

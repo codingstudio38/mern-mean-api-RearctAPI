@@ -11,18 +11,20 @@ async function Auth(req, resp, next) {
         if (!_token) {
             return resp.status(401).json({ "status": 401, "message": "Unauthorized" });
         }
-        const varifyUsers = jwt.verify(_token, process.env.SECRET_KEY);
+        let ex_token = _token.split(' ');
+        ex_token = ex_token.length == 2 ? ex_token[1] : '';
+        const varifyUsers = jwt.verify(ex_token, process.env.SECRET_KEY);
         if (!varifyUsers) {
             return resp.status(401).json({ "status": 401, "message": "Invalid token detected..!!" });
         }
         const user = await UsersModel.findOne({ _id: new mongodb.ObjectId(varifyUsers._id) });
         const _check = user.tokens.filter((items, index) => {
-            return items.token == _token;
+            return items.token == ex_token;
         });
         if (_check.length === 0) {
             return resp.status(401).json({ "status": 401, "message": "Token has been expired. Please logged in again." });
         }
-        req.token = _token;
+        req.token = ex_token;
         req.user = user;
         next();
     } catch (error) {

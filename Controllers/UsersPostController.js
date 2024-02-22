@@ -135,7 +135,7 @@ async function UsersPostList(req, resp) {
         }
         return resp.status(200).json({ "status": 200, "message": "Data successfully fetched.", "list": res });
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -200,7 +200,7 @@ async function GetPostById(req, resp) {
         }
         return resp.status(200).json({ "status": 200, "message": "Success", "error": '', 'result': data, "total": total });
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -211,7 +211,7 @@ async function DeletePostById(req, resp) {
         let data = await UsersPostModel.deleteOne({ '_id': new mongodb.ObjectId(rowid) });
         return resp.status(200).json({ "status": 200, "message": "Successfully deleted", "error": '', 'result': data, "total": total });
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -229,7 +229,7 @@ async function SaveUsersPost(req, resp) {
             return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved.", "error": '', 'result': result });
         });
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -248,7 +248,7 @@ async function UpdateUserPost(req, resp) {
         if (!update) return resp.status(200).json({ "status": 400, "message": "Failed to update..!!", "error": update });
         return resp.status(200).json({ "status": 200, "message": "Post has been successfully updated.", "error": '', 'result': update, 'total': total });
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
     }
 }
 // https://www.grapecity.com/blogs/how-to-generate-excel-spreadsheets-in-nodejs
@@ -391,7 +391,6 @@ async function ExportUserPostPDF(req, resp) {
                 resp.status(400).json({ status: 400, message: "Downloads directory not found", "download": filePath })
             }
         }).catch((error) => {
-            console.error(error);
             return resp.status(200).json({ status: 400, 'pdffile': '', message: error.message });
         });
         // console.log(html);

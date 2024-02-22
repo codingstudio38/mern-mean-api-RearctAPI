@@ -69,7 +69,7 @@ async function UsersList(req, resp) {
             .exec();
         return resp.status(200).json({ "status": 200, "message": "succes", "error": '', 'list': list[0].result });
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -86,7 +86,7 @@ async function UserDetail(req, resp) {
             return resp.status(200).json({ "status": 200, "message": "Successfully fetched.", "user": data });
         }
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!.", "error": error })
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!.", "error": error.message })
     }
 }
 
@@ -125,7 +125,7 @@ async function CreateNew(req, resp) {
         });
         NewUser.save(function (err, result) {
             if (err) {
-                return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": err });
+                return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": err.message });
             }
             else {
                 let id = result._id;
@@ -136,7 +136,7 @@ async function CreateNew(req, resp) {
                         if (err) {
                             let deleteIS = deleteIs(id);
                             deleteIS.then((data) => {
-                                return resp.status(200).json({ "status": 400, "message": "Failed to move file.", "error": err });
+                                return resp.status(200).json({ "status": 400, "message": "Failed to move file.", "error": err.message });
                             });
                         } else {
                             let updateIS = updateIs(id, { "photo": file_name, updated_at: Date.now() });
@@ -155,7 +155,7 @@ async function CreateNew(req, resp) {
         });
 
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!.", "error": error })
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!.", "error": error.message })
     }
 }
 
@@ -213,7 +213,7 @@ async function UpdateUser(req, resp) {
             let file_name = `${currentDateTime(fileIs.name)[0]}.${currentDateTime(fileIs.name)[1]}`;
             fileIs.mv(`${user_files}/${file_name}`, function (err) {
                 if (err) {
-                    return resp.status(400).json({ 'status': 400, "error_": err, "message": "Failed to move file..!!" });
+                    return resp.status(400).json({ 'status': 400, "error_": err.message, "message": "Failed to move file..!!" });
                 } else {
                     oldfile_sms = removeoldFiles(`${user_files}/${oldphoto}`);
                     if (!password) {
@@ -245,7 +245,7 @@ async function UpdateUser(req, resp) {
             });
         }
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -262,7 +262,7 @@ async function DeleteUser(req, resp) {
             return resp.status(200).json({ "status": 400, "message": "Failed. User Id required." });
         }
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
@@ -280,14 +280,14 @@ async function UserLogin(req, resp) {
             const validPassword = await bcrypt.compare(password, user.password);
             if (validPassword) {
                 const token = await user.generateAuthToken();
-                const U = { 'email': user.email, 'name': user.name, 'phone': user.phone, 'photo': user.photo, '_id': user._id, 'token': token }
+                const U = { 'email': user.email, 'name': user.name, 'phone': user.phone, 'photo': user.photo, '_id': user._id, 'token': token, "token_type": "Bearer" }
                 return resp.status(200).json({ "status": 200, "message": "Successfully logged in.", "user": U });
             } else {
                 return resp.status(200).json({ "status": 400, "message": "Invalid Password" });
             }
         }
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
 
 }
@@ -300,7 +300,7 @@ async function UserLogout(req, resp) {
         await req.user.save();
         return resp.status(200).json({ "status": 200, "message": "Successfully logged out." });
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
 }
 async function DownloadFile(req, resp) {
@@ -334,13 +334,24 @@ async function UserChatList(req, resp) {
         let data = await UsersModel.aggregate([{ $match: { 'name': { $regex: new RegExp(name), $options: "i" } } }, { $project: { _id: 1, name: 1, photo: 1 } }]);
         return resp.status(200).json({ "status": 200, "message": "Success", "data": data });
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error });
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
+}
 
+
+async function GetDataFromModal(req, resp) {
+    try {
+        let { name } = req.query;
+        let totalusers, data;
+        totalusers = await UsersModel.find().countDocuments();
+        data = await UsersModel.UserNameEmailPhone();
+        return resp.status(200).json({ "status": 200, "message": "Success", "data": data, "total": totalusers });
+    } catch (error) {
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
+    }
 }
 
 
 
 
-
-module.exports = { Allusers, CreateNew, UpdateUser, DeleteUser, UserDetail, UserLogin, UserLogout, DownloadFile, UserChatList, UsersList };
+module.exports = { Allusers, CreateNew, UpdateUser, DeleteUser, UserDetail, UserLogin, UserLogout, DownloadFile, UserChatList, UsersList, GetDataFromModal };
