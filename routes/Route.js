@@ -63,6 +63,8 @@ routeapp.post('/update-user-wsstatus', Auth, UsersChatController.UpdateUserWeSta
 
 routeapp.get('/users/GetDataFromModal', Auth, UsersController.GetDataFromModal);
 
+routeapp.get('/NodeJsRequest', UsersChatController.NodeJsRequest);
+
 
 routeapp.get('*', (req, res) => {
     res.status(404).json({ 'status': 404, 'message': 'route not found..!!' });

@@ -4,6 +4,8 @@ const path = require('path');
 const fs = require('fs');
 const mongodb = require('mongodb');
 const chat_files = path.join(__dirname, './../public/chat-files');
+const request = require("request");
+
 function currentDateTime(t) {
     const now = new Date();
     let file_ = t.split(".");
@@ -193,6 +195,28 @@ async function UpdateUserWeStatus(req, resp) {
     }
 }
 
+async function NodeJsRequest(req, resp) {
 
+    try {
+        var options = {
+            method: 'GET',
+            url: 'https://jsonplaceholder.typicode.com/users',
+            // headers: { 'Content-type': ' application/x-www-form-urlencoded' },
+            // form: {
+            //     "token": "mg3it8nmn78ey7l3",
+            //     "to": "+918763699746",
+            //     "body": "WhatsApp API on UltraMsg.com works good"
+            // }
+        };
 
-module.exports = { SaveChat, ChatList, CurrentChatUser, FindChat, UpdateUserWeStatus };
+        request(options, function (error, response, body) {
+            if (error) return resp.status(200).json({ "error": error, "body": null });;
+            return resp.status(200).json({ "error": error, "body": JSON.parse(body) });//"response": response,
+        });
+    } catch (error) {
+        return resp.status(500).json({ error: error.message });
+    }
+
+}
+
+module.exports = { SaveChat, ChatList, CurrentChatUser, FindChat, UpdateUserWeStatus, NodeJsRequest };
