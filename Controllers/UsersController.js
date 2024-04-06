@@ -351,7 +351,29 @@ async function GetDataFromModal(req, resp) {
     }
 }
 
+async function UpdateUserWsStatus(userid, Status) {
+    try {
+        if (userid == "") {
+            console.log('ws user id required');
+            return 0;
+        }
+        let updateis = await UsersModel.updateOne({ _id: userid }, { $set: { wsstatus: Status } });
+        console.log({ "status": 200, "message": "Success ws status updated" });//, "data": updateis 
+        return 1;
+    } catch (error) {
+        console.log({ "status": 400, "message": "Failed to update es status" });//, "error": error.message 
+        return 0;
+    }
+}
 
+async function NumberofActiveUserWs(req, resp) {
+    try {
+        var { status } = req.body;
+        let data = await UsersModel.find({ wsstatus: status });
+        return resp.status(200).json({ "status": 200, "message": "Success", data: data });
+    } catch (error) {
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
+    }
+}
 
-
-module.exports = { Allusers, CreateNew, UpdateUser, DeleteUser, UserDetail, UserLogin, UserLogout, DownloadFile, UserChatList, UsersList, GetDataFromModal };
+module.exports = { Allusers, CreateNew, UpdateUser, DeleteUser, UserDetail, UserLogin, UserLogout, DownloadFile, UserChatList, UsersList, GetDataFromModal, UpdateUserWsStatus, NumberofActiveUserWs };

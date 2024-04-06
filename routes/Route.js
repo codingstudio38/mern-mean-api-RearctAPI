@@ -63,6 +63,8 @@ routeapp.post('/update-user-wsstatus', Auth, UsersChatController.UpdateUserWeSta
 
 routeapp.get('/users/GetDataFromModal', Auth, UsersController.GetDataFromModal);
 
+routeapp.post('/users/number-of-active-user', Auth, UsersController.NumberofActiveUserWs);
+
 routeapp.get('/NodeJsRequest', UsersChatController.NodeJsRequest);
 
 

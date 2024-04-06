@@ -18,33 +18,55 @@ const wsServer = new webSocketServer({
     autoAcceptConnections: false
 });
 const clients = {};
-
+const UsersController = require('./Controllers/UsersController');
 var GetUniqueID = () => {
     const now = new Date();
-    return `${now.getFullYear()}_${now.getMonth() + 1}_${now.getDate()}-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;
+    let month = now.getMonth() + 1;
+    let date = now.getDate() + 1;
+    return `${now.getFullYear()}_${month <= 9 ? `0${month}` : month}_${date <= 9 ? `0${date}` : date}-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;
 }
 function originIsAllowed(origin) {
     return true;
 }
+
+var wsActiveUser = [];
 wsServer.on('request', (request) => {
-
-
-    var userID = `${GetUniqueID()}-${Math.floor(Math.random() * 10000)}`;
     if (originIsAllowed(request.origin) === true) {
         console.log(new Date() + ' Recieved a new connrction from origin ' + request.origin);
-    } else {
-        request.reject(); return;
     }
+    if (request.resourceURL.query === undefined) {
+        console.log(new Date() + ' connrction rejected ' + request.origin);
+        request.reject(); return false;
+    }
+    if (request.resourceURL.query.Authorization === undefined) {
+        console.log(new Date() + ' connrction rejected ' + request.origin);
+        request.reject(); return false;
+    }
+    if (request.resourceURL.query.Authorization === '') {
+        console.log(new Date() + ' connrction rejected ' + request.origin);
+        request.reject(); return false;
+    }
+    var userID = request.resourceURL.query.Authorization;//`${GetUniqueID()}-${Math.floor(Math.random() * 10000)}`;
+    // console.log(request.resourceURL.query.Authorization);
     const connection = request.accept(null, request.origin);
     clients[userID] = connection;
-    var wsActiveUser = [];
+    // wsActiveUser.push({ wsid: userID });
+    let data_ = {
+        type: 'datafromws',
+        code: 1000,
+        msg: "active users list and new connected client",
+        // wsActiveUser: wsActiveUser,
+        clientid: userID
+    };
+    for (key in clients) {
+        clients[key].sendUTF(JSON.stringify(data_));
+    }
+    UsersController.UpdateUserWsStatus(userID, 1);
     connection.on('message', function (message) {
-        // Object.assign(message, { wbActiveUser: wbActiveUser })
         if (message.type === 'utf8') {
             console.log('Received Message------------------->', message.utf8Data);
             let data = message;
-            Object.assign(data, { wsActiveUser: wsActiveUser })
-            // console.log(data);
+            Object.assign(message, { clientid: userID })
             for (key in clients) {
                 clients[key].sendUTF(JSON.stringify(data));
                 // clients[key].sendUTF(message);
@@ -63,8 +85,20 @@ wsServer.on('request', (request) => {
     connection.on('close', function (reasonCode, description) {
         console.log('reasonCode-------------->', reasonCode);
         console.log('description-------------->', description);
-        // console.log('connection', connection);
+        console.log('connection close');
+        // wsActiveUser.splice(wsActiveUser.indexOf(clients[userID]), 1)
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        let data_ = {
+            type: 'datafromws',
+            code: 2000,
+            msg: "active users list and disconnected client",
+            // wsActiveUser: wsActiveUser,
+            clientid: userID,
+        };
+        for (key in clients) {
+            clients[key].sendUTF(JSON.stringify(data_));
+        }
+        UsersController.UpdateUserWsStatus(userID, 0);
     });
 
 });
