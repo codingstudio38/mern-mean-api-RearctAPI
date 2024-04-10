@@ -53,6 +53,8 @@ routeapp.get('/users/send-mail', Auth, UsersPostController.SendMail);
 
 routeapp.post('/save-user-chat', Auth, UsersChatController.SaveChat);
 
+routeapp.post('/update-read-status', Auth, UsersChatController.UpdateReadStatus);
+
 routeapp.get('/chat-list', Auth, UsersChatController.ChatList);
 
 routeapp.get('/current-chat-user', Auth, UsersChatController.CurrentChatUser);
