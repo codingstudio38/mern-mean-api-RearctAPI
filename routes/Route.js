@@ -59,6 +59,8 @@ routeapp.get('/chat-list', Auth, UsersChatController.ChatList);
 
 routeapp.get('/current-chat-user', Auth, UsersChatController.CurrentChatUser);
 
+routeapp.post('/get-no-of-unseen-chat', Auth, UsersChatController.getnoofunseenchat);
+
 routeapp.get('/find-chat', Auth, UsersChatController.FindChat);
 
 routeapp.post('/update-user-wsstatus', Auth, UsersChatController.UpdateUserWeStatus);

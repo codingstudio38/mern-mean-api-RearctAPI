@@ -89,14 +89,20 @@ async function CurrentChatUser(req, resp) {
             return resp.status(200).json({ "status": 400, "message": "Invalid to_user. to_user id must be 24 characters." });
         }
 
-
+        let update = await UsersChatModel.updateMany(
+            {
+                $and: [{ 'from_user': new mongodb.ObjectId(to_user) }, { 'to_user': new mongodb.ObjectId(from_user) }]
+            },
+            { $set: { read_status: 1 } },
+            { returnDocument: 'after' }
+        );
         let total = await UsersChatModel.find({
             $and: [{ 'from_user': new mongodb.ObjectId(from_user) }, { 'to_user': new mongodb.ObjectId(to_user) }]
         }).countDocuments();
 
         let from_user_data = await UsersModel.findOne({ _id: { $eq: new mongodb.ObjectId(to_user) } }).select({ name: 1, phone: 1, email: 1, photo: 1 });
 
-        return resp.status(200).json({ "status": 200, "message": "Success", "from_user_data": from_user_data, "total": total, });
+        return resp.status(200).json({ "status": 200, "message": "Success", "from_user_data": from_user_data, "total": total, "update": update });
 
     } catch (error) {
         return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
@@ -223,7 +229,7 @@ async function NodeJsRequest(req, resp) {
 
 async function UpdateReadStatus(req, resp) {
     try {
-        let { status, objid } = req.body;
+        let { from_id, to_id, status, objid } = req.body;
         if (objid == "") {
             return resp.status(200).json({ "status": 400, "message": "id required" });
         }
@@ -235,10 +241,61 @@ async function UpdateReadStatus(req, resp) {
     }
 }
 
+async function getnoofunseenchat(req, resp) {
+    try {
+        let { from_id, to_id } = req.body;
+        if (from_id == "") {
+            return resp.status(200).json({ "status": 400, "message": "from id required" });
+        }
+        if (to_id == "") {
+            return resp.status(200).json({ "status": 400, "message": "to id required" });
+        }
+        // let data = await UsersChatModel.aggregate().sort({ '_id': 1 }).facet({
+        //     result: [
+        //         {
+        //             $match: {
+        //                 $and: [
+        //                     { 'from_user': new mongodb.ObjectId(from_id) },
+        //                     { 'to_user': new mongodb.ObjectId(to_id) },
+        //                     { 'read_status': 0 }
+        //                 ]
+        //             }
+        //         },
+        //         {
+        //             $project: { from_user: 1, to_user: 1, message: 1, chat_file: 1, bookmark: 1, sender: 1, created_at: 1, read_status: 1 }
+        //         },
+        //         // {
+        //         //     $limit: 1
+        //         // },
+        //         // { $sort: { _id: 1 } }
+        //     ]
+        // }).exec();
+        let data = await UsersChatModel.aggregate([
+            {
+                $match: {
+                    $and: [{ 'from_user': new mongodb.ObjectId(from_id) }, { 'to_user': new mongodb.ObjectId(to_id) }, { 'read_status': 0 }]
+                }
+            },
+            {
+                $project: { from_user: 1, to_user: 1, message: 1, chat_file: 1, bookmark: 1, sender: 1, created_at: 1, read_status: 1 }
+            },
+            { $sort: { _id: -1 } },
+            {
+                $limit: 1
+            }
+        ])
+        let total = await UsersChatModel.find({
+            $and: [{ 'from_user': new mongodb.ObjectId(from_id) }, { 'to_user': new mongodb.ObjectId(to_id) }, { 'read_status': 0 }]
+        }).countDocuments();
+
+        return resp.status(200).json({ "status": 200, "message": "Success", total: total, "data": total > 0 ? data[0] : {} });
+    } catch (error) {
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
+    }
+}
 
 
 
 
 
-
-module.exports = { SaveChat, ChatList, CurrentChatUser, FindChat, UpdateUserWeStatus, NodeJsRequest, UpdateReadStatus };
+module.exports = { SaveChat, ChatList, CurrentChatUser, FindChat, UpdateUserWeStatus, NodeJsRequest, UpdateReadStatus, getnoofunseenchat };
