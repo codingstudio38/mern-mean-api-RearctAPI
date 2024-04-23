@@ -5,7 +5,7 @@ const fs = require('fs');
 const mongodb = require('mongodb');
 const chat_files = path.join(__dirname, './../public/chat-files');
 const request = require("request");
-
+const { parentPort, Worker } = require('worker_threads');
 function currentDateTime(t) {
     const now = new Date();
     let file_ = t.split(".");
@@ -295,7 +295,40 @@ async function getnoofunseenchat(req, resp) {
 }
 
 
+async function withoutworkerthreads(req, resp) {
+    try {
+        let { p } = req.query;
+        let j = 0;
+        for (let i = 0; i < 10000000000; i++) {
+            j++;
+        }
+        return resp.status(200).json({ "status": 200, "data": j });
+    } catch (error) {
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
+    }
+}
 
+async function withworkerthreads(req, resp) {
+    try {
+        let { p } = req.query;
+        const work = new Worker('./Controllers/heavy.js');
+        work.on('message', (data) => {
+            return resp.status(200).json({ "status": 200, "data": data });
+        })
+        work.on('error', (e) => {
+            return resp.status(400).json({ "status": 400, "data": e.message });
+        })
+    } catch (error) {
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
+    }
+}
 
+async function testwithworkerthreads(req, resp) {
+    try {
+        return resp.status(200).json({ "status": 200, "data": true });
+    } catch (error) {
+        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
+    }
+}
 
-module.exports = { SaveChat, ChatList, CurrentChatUser, FindChat, UpdateUserWeStatus, NodeJsRequest, UpdateReadStatus, getnoofunseenchat };
+module.exports = { SaveChat, ChatList, CurrentChatUser, FindChat, UpdateUserWeStatus, NodeJsRequest, UpdateReadStatus, getnoofunseenchat, withoutworkerthreads, withworkerthreads, testwithworkerthreads };

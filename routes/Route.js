@@ -5,7 +5,7 @@ const UsersPostController = require('./../Controllers/UsersPostController');
 const UsersChatController = require('./../Controllers/UsersChatController');
 const Auth = require('./../middleware/Auth');
 const GeneralAuth = require('./../middleware/GeneralAuth');
-
+const { parentPort, Worker } = require('worker_threads');
 
 routeapp.get('/', (req, resp) => {
     resp.status(200).json({ status: 200, 'message': "It's wotking" });
@@ -71,6 +71,11 @@ routeapp.post('/users/number-of-active-user', Auth, UsersController.NumberofActi
 
 routeapp.get('/NodeJsRequest', UsersChatController.NodeJsRequest);
 
+routeapp.get('/without-worker-threads', UsersChatController.withoutworkerthreads);
+
+routeapp.get('/with-worker-threads', UsersChatController.withworkerthreads);
+
+routeapp.get('/test-worker-threads', UsersChatController.testwithworkerthreads);
 
 routeapp.get('*', (req, res) => {
     res.status(404).json({ 'status': 404, 'message': 'route not found..!!' });
