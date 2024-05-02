@@ -373,20 +373,25 @@ async function ExportUserPostPDF(req, resp) {
         pdf.create(pdfoutput, pdfoptions).then((res) => {
             // return resp.status(200).json({ status: 200, 'pdffile': res, 'filePath': filePath, message: 'success' });
             if (fs.existsSync(`${filePath}`)) {
-                return resp.download(filePath, filename,
-                    (err) => {
-                        if (err) {
-                            return resp.status(200).json({
-                                status: 200,
-                                error: err.message,
-                                message: "Problem while downloading the file"
-                            })
-                        } else {
-                            DeleteFile(filePath).then((resdata) => {
-                                // console.log(resdata);//after download response file will be deleted
-                            })
-                        }
-                    });
+                resp.set({
+                    "Content-Type": "application/pdf",
+                    "Content-Length": html.length
+                })
+                return resp.sendFile(filePath);// for preview
+                // return resp.download(filePath, filename,
+                //     (err) => {
+                //         if (err) {
+                //             return resp.status(200).json({
+                //                 status: 200,
+                //                 error: err.message,
+                //                 message: "Problem while downloading the file"
+                //             })
+                //         } else {
+                //             DeleteFile(filePath).then((resdata) => {
+                //                 // console.log(resdata);//after download response file will be deleted
+                //             })
+                //         }
+                //     });
             } else {
                 resp.status(400).json({ status: 400, message: "Downloads directory not found", "download": filePath })
             }
