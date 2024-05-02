@@ -80,6 +80,8 @@ routeapp.get('/test-worker-threads', UsersChatController.testwithworkerthreads);
 
 routeapp.post('/FileRD', Randd.FileRD);
 
+routeapp.get('/nodejS-streams', Randd.NodeJSStreams);
+
 routeapp.get('*', (req, res) => {
     res.status(404).json({ 'status': 404, 'message': 'route not found..!!' });
 });
