@@ -9,7 +9,9 @@ var bodyParser = require("body-parser");
 const ejs = require('ejs');
 const views_path = path.join(__dirname, "./views/");
 const { parentPort, Worker } = require('worker_threads');
-
+const cluster = require('node:cluster');
+const os = require("os");
+const totalCPUs = os.cpus('').length;
 
 ////web socket///
 const http = require('http');
@@ -107,7 +109,11 @@ wsServer.on('request', (request) => {
 });
 
 ////web socket////
-
+// if (cluster.isPrimary) {
+//     for (let i = 0; i < totalCPUs; i++) {
+//         cluster.fork();
+//     }
+// } else { }
 const app = express();
 app.set("view engine", "ejs");
 app.set("views", views_path);
@@ -119,3 +125,6 @@ app.use("/users-file", express.static('./public/users/'));
 app.use("/users-chat-file", express.static('./public/chat-files/'));
 app.use(require('./routes/Route'));
 app.listen(PORT);
+
+
+

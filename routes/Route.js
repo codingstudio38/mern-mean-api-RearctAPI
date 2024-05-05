@@ -1,3 +1,6 @@
+const cluster = require('node:cluster');
+const os = require("os");
+const totalCPUs = os.cpus('').length;
 const express = require('express');
 const routeapp = new express.Router;
 const UsersController = require('./../Controllers/UsersController');
@@ -7,7 +10,6 @@ const Randd = require('./../Controllers/Randd');
 const Auth = require('./../middleware/Auth');
 const GeneralAuth = require('./../middleware/GeneralAuth');
 const { parentPort, Worker } = require('worker_threads');
-
 routeapp.get('/', (req, resp) => {
     resp.status(200).json({ status: 200, 'message': "It's wotking" });
 });
@@ -81,6 +83,14 @@ routeapp.get('/test-worker-threads', UsersChatController.testwithworkerthreads);
 routeapp.post('/FileRD', Randd.FileRD);
 
 routeapp.get('/nodejS-streams', Randd.NodeJSStreams);
+
+routeapp.get('/nodejS-cluster', (req, resp) => {
+    try {
+        return resp.status(200).json({ "status": 200, "message": "success", "data": process.pid, "totalCPUs": totalCPUs });
+    } catch (error) {
+        return resp.status(500).json({ "status": 500, "message": error.message, "data": false });
+    }
+});
 
 routeapp.get('*', (req, res) => {
     res.status(404).json({ 'status': 404, 'message': 'route not found..!!' });

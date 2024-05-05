@@ -54,4 +54,13 @@ async function NodeJSStreams(req, resp) {
     }
 }
 
-module.exports = { FileRD, NodeJSStreams };
+
+async function NodeJScluster(req, resp) {
+    try {
+        return resp.status(200).json({ "status": 200, "message": "success", "data": process.pid });
+    } catch (error) {
+        return resp.status(500).json({ "status": 500, "message": error.message, "data": false });
+    }
+}
+
+module.exports = { FileRD, NodeJSStreams, NodeJScluster };
