@@ -1,10 +1,28 @@
+
+const UsersModel = require('../Models/UsersModel');
+const UsersPostModel = require('../Models/UsersPostModel');
 const path = require('path');
 const fs = require('fs');
-const user_files = path.join(__dirname, './../public/users');
+const multer = require('multer');
+const xl_files = path.join(__dirname, './../public/xl-files');
+const export_xl = path.join(__dirname, './../public/export-xl');
+const export_pdf = path.join(__dirname, './../public/pdf-export');
+const ejs = require('ejs');
 const mongodb = require('mongodb');
+const readXlsxFile = require('read-excel-file/node');
+const xlsx = require('xlsx');
+const nodemailer = require('nodemailer');
+const pdf = require("pdf-creator-node");
+const user_files = path.join(__dirname, './../public/users');
 const bcrypt = require("bcrypt");
 const Healper = require("./Healper");
-
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    auth: { user: 'onlinemessages0001@gmail.com', pass: 'uellirjjzdfpqyeo' }
+});
 
 async function FileRD(req, resp) {
     try {
@@ -63,4 +81,40 @@ async function NodeJScluster(req, resp) {
     }
 }
 
-module.exports = { FileRD, NodeJSStreams, NodeJScluster };
+
+async function NodeJSAsynchronousFunctioan(req, resp) {
+    try {
+        let { name = '', page = 1, limit = 5 } = req.query;
+        let data = [], queryis = {}, total = 0, from = 0;
+        page = parseInt(page) <= 0 ? 1 : parseInt(page);
+        limit = parseInt(limit) <= 0 ? 5 : parseInt(limit);
+        from = (page - 1) * limit;
+        if (name !== '') {
+            queryis = {
+                $or: [
+                    { name: { $regex: new RegExp(name), $options: "i" } },
+                    { email: { $regex: new RegExp(name), $options: "i" } },
+                ],
+            }
+        }
+
+        data = await UsersModel.find(
+            queryis
+        )
+            .select({ _id: 1, name: 1, phone: 1, email: 1 })
+            .skip(from)
+            .limit(limit)
+            .sort({ name: 1 });
+        total = await UsersModel.find(
+            queryis
+        )
+            .select({ _id: 1, name: 1, phone: 1, email: 1 })
+            .countDocuments();
+        let pdata = Healper.PaginationData(total, limit, page);
+        return resp.status(200).json({ "status": 200, "message": 'success', "data": data, pagination: pdata });
+    } catch (error) {
+        return resp.status(500).json({ "status": 500, "message": error.message, "data": false });
+    }
+}
+
+module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan };

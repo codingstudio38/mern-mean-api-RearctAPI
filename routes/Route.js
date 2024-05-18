@@ -92,6 +92,8 @@ routeapp.get('/nodejS-cluster', (req, resp) => {
     }
 });
 
+routeapp.get('/nodejS-AsynchronousFunctioan', Randd.NodeJSAsynchronousFunctioan);
+
 routeapp.get('*', (req, res) => {
     res.status(404).json({ 'status': 404, 'message': 'route not found..!!' });
 });
