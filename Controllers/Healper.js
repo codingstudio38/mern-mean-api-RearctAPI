@@ -47,13 +47,14 @@ function PaginationData(total, limit, page) {
     try {
         var totalpage, nextPage, record_from, record_to, hasNextPage, hasPrevPage, prevPage, page_links, skip;
         skip = (page - 1) * limit;
-        if (total % limit === 0) {
-            totalpage = total / limit;
-        } else {
-            let num = total / limit + " ";
-            let num_ = num.split(".");
-            totalpage = parseInt(num_[0]) + 1;
-        }
+        // if (total % limit === 0) {
+        //     totalpage = Math.ceil(total / limit) ;
+        // } else {
+        //     let num = total / limit + " ";
+        //     let num_ = num.split(".");
+        //     totalpage = parseInt(num_[0]) + 1;
+        // }
+        totalpage = Math.ceil(total / limit);
         nextPage = parseInt(page + 1);
         record_from = skip + 1;
         record_to = record_from + limit - 1;
