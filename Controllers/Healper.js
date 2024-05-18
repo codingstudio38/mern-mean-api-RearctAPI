@@ -44,40 +44,48 @@ async function ReadFile(filePath, type) {
 }
 
 function PaginationData(total, limit, page) {
-    var totalpage, nextPage, pagingCounter, hasNextPage, hasPrevPage, prevPage, page_links, skip;
-    skip = (page - 1) * limit;
-    if (total % limit === 0) {
-        totalpage = total / limit;
-    } else {
-        let num = total / limit + " ";
-        let num_ = num.split(".");
-        totalpage = parseInt(num_[0]) + 1;
-    }
-    nextPage = parseInt(page + 1);
-    pagingCounter = skip + 1;
-    if (page * limit < total) {
-        hasNextPage = true;
-        nextPage = nextPage;
-    } else {
-        hasNextPage = false;
-        nextPage = null;
-    }
-    if (page <= 1) {
-        hasPrevPage = false;
-        prevPage = null;
-    } else {
-        hasPrevPage = true;
-        prevPage = parseInt(page - 1);
-    }
-    page_links = [];
-    for (let i = 1; i <= totalpage; i++) {
-        if (page == i) {
-            page_links.push({ 'link': i, active: true });
+    try {
+        var totalpage, nextPage, record_from, record_to, hasNextPage, hasPrevPage, prevPage, page_links, skip;
+        skip = (page - 1) * limit;
+        if (total % limit === 0) {
+            totalpage = total / limit;
         } else {
-            page_links.push({ 'link': i, active: false });
+            let num = total / limit + " ";
+            let num_ = num.split(".");
+            totalpage = parseInt(num_[0]) + 1;
         }
+        nextPage = parseInt(page + 1);
+        record_from = skip + 1;
+        record_to = record_from + limit - 1;
+        if (record_to > total) {
+            record_to = total;
+        }
+        if (page * limit < total) {
+            hasNextPage = true;
+            nextPage = nextPage;
+        } else {
+            hasNextPage = false;
+            nextPage = null;
+        }
+        if (page <= 1) {
+            hasPrevPage = false;
+            prevPage = null;
+        } else {
+            hasPrevPage = true;
+            prevPage = parseInt(page - 1);
+        }
+        page_links = [];
+        for (let i = 1; i <= totalpage; i++) {
+            if (page == i) {
+                page_links.push({ 'link': i, active: true });
+            } else {
+                page_links.push({ 'link': i, active: false });
+            }
+        }
+        return { 'totalpage': totalpage, 'nextPage': nextPage, 'record_from': record_from, 'record_to': record_to, 'hasNextPage': hasNextPage, 'hasPrevPage': hasPrevPage, 'prevPage': prevPage, 'page_links': page_links, total: total, current_page: page };
+    } catch (error) {
+        throw new Error(error.message);
     }
-    return { 'totalpage': totalpage, 'nextPage': nextPage, 'pagingCounter': pagingCounter, 'hasNextPage': hasNextPage, 'hasPrevPage': hasPrevPage, 'prevPage': prevPage, 'page_links': page_links, total: total, current_page: page };
 
 }
 
