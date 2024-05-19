@@ -16,6 +16,7 @@ const pdf = require("pdf-creator-node");
 const user_files = path.join(__dirname, './../public/users');
 const bcrypt = require("bcrypt");
 const Healper = require("./Healper");
+const mime = require('mime');
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -98,19 +99,39 @@ async function NodeJSAsynchronousFunctioan(req, resp) {
             }
         }
 
-        data = await UsersModel.find(
+        listdata = await UsersModel.find(
             queryis
         )
-            .select({ _id: 1, name: 1, phone: 1, email: 1 })
+            .select({ _id: 1, name: 1, phone: 1, email: 1, photo: 1 })
             .skip(from)
             .limit(limit)
             .sort({ name: 1 });
+
         total = await UsersModel.find(
             queryis
         )
-            .select({ _id: 1, name: 1, phone: 1, email: 1 })
+            .select({ _id: 1, name: 1, phone: 1, email: 1, photo: 1 })
             .countDocuments();
+
         let pdata = Healper.PaginationData(total, limit, page);
+        let filedata = new Promise((resolve, reject) => {
+            let resetdata = [];
+            listdata.forEach(async element => {
+                try {
+                    let filePath = path.join(__dirname, `./../public/users/${element.photo}`);
+                    let fdtl = await Healper.FileInfo(filePath);
+                    resetdata.push({ _id: element._id, name: element.name, phone: element.phone, email: element.email, photo: element.photo, filedetails: fdtl });
+                    resolve(resetdata)
+                } catch (error) {
+                    reject(error.message);
+                }
+            });
+        });
+        await filedata.then((datais) => {
+            data = datais;
+        }).catch((error) => {
+            throw new Error(error);
+        });
         return resp.status(200).json({ "status": 200, "message": 'success', "data": data, pagination: pdata });
     } catch (error) {
         return resp.status(500).json({ "status": 500, "message": error.message, "data": false });

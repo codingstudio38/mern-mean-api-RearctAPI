@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-
+const mime = require('mime');
 async function FileExists(filePath) {
     try {
         if (filePath == "" || filePath == undefined || filePath == null) return false;
@@ -24,6 +24,22 @@ async function DeleteFile(filePath) {
             });
         } else {
             return false;
+        }
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+async function FileInfo(filePath) {
+    try {
+        if (filePath == "" || filePath == undefined || filePath == null) return { filetype: '', filesize: '', sizetype: '' };
+        if (fs.existsSync(`${filePath}`)) {
+            const filedata = fs.statSync(filePath);
+            const size = filedata.size / 1024;
+            const fileType = mime.getType(filePath);
+            return { filetype: fileType, filesize: size, sizetype: 'kb' };
+        } else {
+            return { filetype: '', filesize: '', sizetype: '' };
         }
     } catch (error) {
         throw new Error(error.message);
@@ -100,4 +116,4 @@ function PaginationData(total, limit, page) {
 //     if (!err) console.log("file name is updated.");
 //  })
 
-module.exports = { FileExists, DeleteFile, ReadFile, PaginationData };
+module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData };
