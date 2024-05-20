@@ -12,6 +12,7 @@ const readXlsxFile = require('read-excel-file/node');
 const xlsx = require('xlsx');
 const nodemailer = require('nodemailer');
 const pdf = require("pdf-creator-node");
+const moment = require('moment-timezone');
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -106,6 +107,7 @@ async function UsersPostList(req, resp) {
                             "type": 1,
                             "content": 1,
                             "created_at": 1,
+                            'updated_at': 1,
                             "user_field.name": 1,
                             "user_field.photo": 1
                         }
@@ -116,8 +118,24 @@ async function UsersPostList(req, resp) {
             .exec();
         var totalDocs = parseInt(data[0].totalCount[0].total);
         let c = CalculatData(totalDocs, limit, page);
+        let resetdata = [];
+        let docsdata = data[0].result;
+        docsdata.forEach(element => {
+            resetdata.push(
+                {
+                    "_id": element._id,
+                    "userid": element.userid,
+                    "title": element.title,
+                    "type": element.type,
+                    "content": element.content,
+                    "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
+                    "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                    "user_field": element.user_field,
+                }
+            );
+        });
         let res = {
-            docs: data[0].result,
+            docs: resetdata,
             totalDocs: totalDocs,
             limit: limit,
             page: page,
@@ -238,7 +256,7 @@ async function UpdateUserPost(req, resp) {
     let { rowid, userid, title, type, content } = req.body;
     let dataObj, total;
     try {
-        dataObj = { 'userid': userid, 'title': title, 'type': type, 'content': content, };
+        dataObj = { 'userid': userid, 'title': title, 'type': type, 'content': content, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') };
         total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) }).countDocuments();
         if (total <= 0) {
             return resp.status(200).json({ "status": 400, "message": "Record not found.", "error": '', 'result': '', 'total': total });

@@ -32,17 +32,19 @@ async function DeleteFile(filePath) {
 
 async function FileInfo(filePath) {
     try {
-        if (filePath == "" || filePath == undefined || filePath == null) return { filetype: '', filesize: '', sizetype: '' };
+        if (filePath == "" || filePath == undefined || filePath == null) return { filetype_st: '', filetype: '', filesize: '', sizetype: '' };
         if (fs.existsSync(`${filePath}`)) {
             const filedata = fs.statSync(filePath);
             const size = filedata.size / 1024;
             const fileType = mime.getType(filePath);
-            return { filetype: fileType, filesize: size, sizetype: 'kb' };
+            let filetype_st = path.extname(filePath)
+            filetype_st = filetype_st.replace('.', '', filetype_st).toLowerCase();
+            return { filetype_st: filetype_st, filetype: fileType, filesize: size, sizetype: 'kb' };
         } else {
-            return { filetype: '', filesize: '', sizetype: '' };
+            return { filetype_st: '', filetype: '', filesize: '', sizetype: '' };
         }
     } catch (error) {
-        throw new Error(error.message);
+        throw new Error(error);
     }
 }
 

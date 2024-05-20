@@ -1,11 +1,12 @@
 const mongooseConnect = require('../Config/MongooseConfig');
 const mongoosePaginate = require("mongoose-paginate-v2");
+const moment = require('moment-timezone');
 const UsersPostSchema = new mongooseConnect.Schema({
     userid: { type: 'ObjectId', required: true, trim: true },//mongoose.Schema.Types.ObjectId
     title: { type: String, required: false, trim: true, default: null },
     type: { type: String, required: false, trim: true, default: null },
     content: { type: String, required: false, trim: true, default: null },
-    created_at: { type: Date, required: true, default: Date.now() },//Date.now()new Date()
+    created_at: { type: Date, required: true, default: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') },//Date.now()new Date()
     updated_at: { type: Date, required: false, default: null },
 });
 UsersPostSchema.plugin(mongoosePaginate);

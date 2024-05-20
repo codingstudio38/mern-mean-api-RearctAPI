@@ -2,6 +2,7 @@ const mongooseConnect = require('./../Config/MongooseConfig');
 const mongoosePaginate = require("mongoose-paginate-v2");
 const jwt = require('jsonwebtoken');
 const mongodb = require('mongodb');
+const moment = require('moment-timezone');
 const UsersSchema = new mongooseConnect.Schema({
     name: { type: String, required: false, trim: true, default: "auto generate name by mongo" },
     phone: { type: String, required: true, unique: true, trim: true },
@@ -14,7 +15,7 @@ const UsersSchema = new mongooseConnect.Schema({
             type: String, required: true
         }
     }],
-    created_at: { type: Date, required: true, default: Date.now() },//new Date()
+    created_at: { type: Date, required: true, default: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') },//new Date()
     updated_at: { type: Date, required: false, default: null },
 });
 UsersSchema.methods.generateAuthToken = async function () {

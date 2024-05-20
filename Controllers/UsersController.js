@@ -5,6 +5,7 @@ const fs = require('fs');
 const user_files = path.join(__dirname, './../public/users');
 const mongodb = require('mongodb');
 const bcrypt = require("bcrypt");
+const moment = require('moment-timezone');
 function currentDateTime(t) {
     const now = new Date();
     let file_ = t.split(".");
@@ -36,7 +37,26 @@ async function Allusers(req, resp) {
     let limit = parseInt(size);
     UsersModel.paginate({}, { page: page, limit: limit })
         .then((result) => {
-            return resp.status(200).json({ "status": 200, "message": "Data successfully fetched.", "list": result });
+            let newlist = [];
+            let docsdata = result.docs;
+            docsdata.forEach(element => {
+                newlist.push(
+                    {
+                        "_id": element._id,
+                        "name": element.name,
+                        "phone": element.phone,
+                        "email": element.email,
+                        "photo": element.photo,
+                        "password": element.password,
+                        "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
+                        "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                        "__v": element.__v,
+                        "wsstatus": element.wsstatus,
+                        "tokens": element.tokens,
+                    }
+                );
+            });
+            return resp.status(200).json({ "status": 200, "message": "Data successfully fetched.", "list": result, 'newlist': newlist });
         })
         .catch((error) => {
             return resp.status(400).json({ "status": 400, "message": "Failed to fetched.", "error": error });
@@ -67,7 +87,21 @@ async function UsersList(req, resp) {
                 ],
             })
             .exec();
-        return resp.status(200).json({ "status": 200, "message": "succes", "error": '', 'list': list[0].result });
+        let resetdata = [];
+        let docsdata = list[0].result;
+        docsdata.forEach(element => {
+            resetdata.push(
+                {
+                    "_id": element._id,
+                    "name": element.name,
+                    "email": element.email,
+                    "phone": element.phone,
+                    "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
+                    "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                }
+            );
+        });
+        return resp.status(200).json({ "status": 200, "message": "succes", "error": '', 'list': resetdata });
     } catch (error) {
         return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
@@ -139,7 +173,7 @@ async function CreateNew(req, resp) {
                                 return resp.status(200).json({ "status": 400, "message": "Failed to move file.", "error": err.message });
                             });
                         } else {
-                            let updateIS = updateIs(id, { "photo": file_name, updated_at: Date.now() });
+                            let updateIS = updateIs(id, { "photo": file_name, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') });
                             updateIS.then((data) => {
                                 let useris = findUser(id);
                                 useris.then((user) => {
