@@ -17,6 +17,7 @@ const user_files = path.join(__dirname, './../public/users');
 const bcrypt = require("bcrypt");
 const Healper = require("./Healper");
 const mime = require('mime');
+const moment = require('moment-timezone');
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -102,7 +103,7 @@ async function NodeJSAsynchronousFunctioan(req, resp) {
         listdata = await UsersModel.find(
             queryis
         )
-            .select({ _id: 1, name: 1, phone: 1, email: 1, photo: 1 })
+            .select({ _id: 1, name: 1, phone: 1, email: 1, photo: 1, created_at: 1, updated_at: 1 })
             .skip(from)
             .limit(limit)
             .sort({ name: 1 });
@@ -120,7 +121,11 @@ async function NodeJSAsynchronousFunctioan(req, resp) {
                 try {
                     let filePath = path.join(__dirname, `./../public/users/${element.photo}`);
                     let fdtl = await Healper.FileInfo(filePath);
-                    resetdata.push({ _id: element._id, name: element.name, phone: element.phone, email: element.email, photo: element.photo, filedetails: fdtl });
+                    resetdata.push({
+                        _id: element._id, name: element.name, phone: element.phone, email: element.email, photo: element.photo, filedetails: fdtl,
+                        "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
+                        "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                    });
                     resolve(resetdata)
                 } catch (error) {
                     reject(error.message);
