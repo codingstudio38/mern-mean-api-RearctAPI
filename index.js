@@ -6,16 +6,16 @@ const Fileupload = require("express-fileupload");
 var cors = require("cors");
 const express = require("express");
 var bodyParser = require("body-parser");
-const ejs = require("ejs");
+// const ejs = require("ejs");
 const views_path = path.join(__dirname, "./views/");
-const { parentPort, Worker } = require("worker_threads");
+// const { parentPort, Worker } = require("worker_threads");
 const cluster = require("node:cluster");
 const os = require("os");
 const totalCPUs = os.cpus("").length;
 const http = require("http");
 const webSocketServer = require("websocket").server;
 const UsersController = require("./Controllers/UsersController");
-
+const expressSession = require("express-session");
 if (cluster.isPrimary) {
     /// for mutiple child serve
     // cluster.isPrimary//cluster.isMaster
@@ -125,6 +125,13 @@ if (cluster.isPrimary) {
     const app = express();
     app.set("view engine", "ejs");
     app.set("views", views_path);
+    app.use(expressSession({
+        "resave": false,
+        "saveUninitialized": true,
+        "lek": 'user_id',
+        "secret": 'user secret',
+        // cookie: { secure: true }
+    }));
     app.use(express.json());
     app.use(Fileupload());
     app.use(cors());

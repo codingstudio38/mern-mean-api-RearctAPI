@@ -32,4 +32,19 @@ async function Auth(req, resp, next) {
     }
 }
 
+function noCache(req, resp, next) {
+    try {
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const origin = `${protocol}://${host}`;
+        console.log(`Current path URL: ${origin} -- ${req.originalUrl}`);
+        resp.setHeader('Surrogate-Control', 'no-store');
+        resp.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        resp.setHeader('Pragma', 'no-cache');
+        resp.setHeader('Expires', '0');
+        return true;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
 module.exports = Auth;
