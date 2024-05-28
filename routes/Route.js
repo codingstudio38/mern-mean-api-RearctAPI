@@ -42,11 +42,7 @@ routeapp.post("/users/save-post", Auth, UsersPostController.SaveUsersPost);
 
 routeapp.get("/users/post-byid/:rowid", Auth, UsersPostController.GetPostById);
 
-routeapp.get(
-    "/users/delete-post-byid/:rowid",
-    Auth,
-    UsersPostController.DeletePostById
-);
+routeapp.get("/users/delete-post-byid/:rowid", Auth, UsersPostController.DeletePostById);
 
 routeapp.post("/users/update-post", Auth, UsersPostController.UpdateUserPost);
 
@@ -106,6 +102,8 @@ routeapp.get("/test-worker-threads", UsersChatController.testwithworkerthreads);
 routeapp.post("/FileRD", Randd.FileRD);
 
 routeapp.get("/nodejS-streams", Randd.NodeJSStreams);
+
+routeapp.get("/nodejS-call-model-method", Randd.CallModelMethod);
 
 routeapp.get("/nodejS-cluster", (req, resp) => {
     try {

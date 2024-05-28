@@ -143,4 +143,16 @@ async function NodeJSAsynchronousFunctioan(req, resp) {
     }
 }
 
-module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan };
+async function CallModelMethod(req, resp) {
+    try {
+        let { name = '' } = req.query;
+        let usermodel = new UsersModel();
+        let data = await usermodel.findByName(name);
+        return resp.status(200).json({ "status": 200, "message": 'success', "data": data });
+    } catch (error) {
+        return resp.status(500).json({ "status": 500, "message": error.message, "data": false });
+    }
+}
+
+
+module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan, CallModelMethod };

@@ -17,7 +17,7 @@ const webSocketServer = require("websocket").server;
 const UsersController = require("./Controllers/UsersController");
 const expressSession = require("express-session");
 if (cluster.isPrimary) {
-    /// for mutiple child serve
+    /// for mutiple child server
     // cluster.isPrimary//cluster.isMaster
     for (let i = 0; i < totalCPUs; i++) {
         cluster.fork();

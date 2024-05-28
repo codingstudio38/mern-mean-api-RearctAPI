@@ -3,6 +3,7 @@ const mongoosePaginate = require("mongoose-paginate-v2");
 const jwt = require('jsonwebtoken');
 const mongodb = require('mongodb');
 const moment = require('moment-timezone');
+const mongoose = require('mongoose');
 const UsersSchema = new mongooseConnect.Schema({
     name: { type: String, required: false, trim: true, default: "auto generate name by mongo" },
     phone: { type: String, required: true, unique: true, trim: true },
@@ -25,18 +26,24 @@ UsersSchema.methods.generateAuthToken = async function () {
         await this.save();
         return _token;
     } catch (error) {
-        return error;
+        throw new Error(error);
     }
 }
-// UsersSchema.methods.UserNameEmailPhone = async function () {
-//     try {
-//         let data = await this.findOne()
-//             .select({ name: 1, photo: 1, email: 1 }).sort({ name: 1 });
-//         return data;
-//     } catch (error) {
-//         throw error;
-//     }
-// }
+UsersSchema.methods.findByName = async function (name) {
+    try {
+        let queryis = {};
+        if (name !== '') {
+            queryis = {
+                $or: [
+                    { name: { $regex: new RegExp(name), $options: "i" } },
+                ],
+            }
+        }
+        return mongoose.model('users').find(queryis);
+    } catch (error) {
+        throw new Error(error);
+    }
+};
 UsersSchema.plugin(mongoosePaginate);
 const UsersModel = mongooseConnect.model('users', UsersSchema);
 module.exports = UsersModel;
