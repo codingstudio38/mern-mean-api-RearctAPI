@@ -57,18 +57,43 @@ async function FileRD(req, resp) {
 
 async function NodeJSStreams(req, resp) {
     try {
-        let filepath = '', filedata = '';
-        filepath = path.join(__dirname, './../public/multifiles/mycon.txt');
-        let c = await Healper.FileExists(filepath);
-        if (!c) return resp.status(200).json({ "status": 200, "message": "failed", "data": false });
-        // let d = await Healper.ReadFile(filepath, 'utf8');
-        // return resp.status(200).json({ "status": 200, "message": "success", "data": d });
-        const stream = fs.createReadStream(filepath, 'utf-8');
-        stream.on('data', (chunk) => {
-            return resp.write(chunk);
-            // return resp.status(200).json({ "status": 200, "message": "success", "data": chunk });
-        });
-        stream.on("end", () => { resp.end(); });
+        let filepath = '', filedata = '', FileSize = 0, FileExists = false, FileType = '';
+        filepath = path.join(__dirname, './../public/assets/video1.mkv');
+        FileExists = await Healper.FileExists(filepath);
+        if (!FileExists) return resp.status(200).json({ "status": 200, "message": "file not exists!!", "data": false });
+        const getFileInfo = await Healper.FileInfo(filepath);
+        FileSize = getFileInfo.filesize;
+        FileType = getFileInfo.filetype;
+        let range = req.headers.range;
+        if (!range) return resp.status(200).json({ "status": 200, "message": 'headers range required!', "data": false });
+        const CHUNK_SIZE = 10 ** 6; // 1MB chunk size
+        const start = Number(range.replace(/\D/g, ""));
+        const end = Math.min(start + CHUNK_SIZE, FileSize - 1);
+
+        const contentLength = end - start + 1;
+        const headers = {
+            'Content-Range': `bytes ${start}-${end}/${FileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': contentLength,
+            'Content-Type': 'video/mp4',
+        };
+
+        // Respond with the 206 Partial Content status
+        resp.writeHead(206, headers);
+        // Create a stream to read the video file chunk
+        const videoStream = fs.createReadStream(filepath, { start, end });
+        // Pipe the video stream to the response
+        videoStream.pipe(resp);
+
+
+        // // let d = await Healper.ReadFile(filepath, 'utf8');
+        // const stream = fs.createReadStream(filepath);
+        // stream.on('data', (chunk) => {
+        //     // resp.writeHead(206, header);
+        //     return resp.write(chunk);
+        //     // return resp.status(200).json({ "status": 200, "message": "success", "data": chunk });
+        // });
+        // stream.on("end", () => { resp.end(); });
     } catch (error) {
         return resp.status(500).json({ "status": 500, "message": error.message, "data": false });
     }
@@ -83,6 +108,14 @@ async function NodeJScluster(req, resp) {
     }
 }
 
+async function NodeJSPlayVideo(req, resp) {
+    try {
+        let data = [];
+        resp.render("video", data);
+    } catch (error) {
+        return resp.status(500).json({ "status": 500, "message": error.message, "data": false });
+    }
+}
 
 async function NodeJSAsynchronousFunctioan(req, resp) {
     try {
@@ -155,4 +188,4 @@ async function CallModelMethod(req, resp) {
 }
 
 
-module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan, CallModelMethod };
+module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan, CallModelMethod, NodeJSPlayVideo };

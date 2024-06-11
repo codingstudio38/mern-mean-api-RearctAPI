@@ -103,6 +103,8 @@ routeapp.post("/FileRD", Randd.FileRD);
 
 routeapp.get("/nodejS-streams", Randd.NodeJSStreams);
 
+routeapp.get("/nodejS-video", Randd.NodeJSPlayVideo);
+
 routeapp.get("/nodejS-call-model-method", Randd.CallModelMethod);
 
 routeapp.get("/nodejS-cluster", (req, resp) => {

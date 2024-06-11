@@ -138,6 +138,7 @@ if (cluster.isPrimary) {
     app.use(bodyParser.json());
     app.use("/users-file", express.static("./public/users/"));
     app.use("/users-chat-file", express.static("./public/chat-files/"));
+    app.use("/assets", express.static("./public/assets/"));
     app.use(require("./routes/Route"));
     app.listen(PORT, () => {
         console.log(`server running on :http://localhost:${process.env.PORT} `);
