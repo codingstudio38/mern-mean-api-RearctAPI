@@ -6,6 +6,8 @@ const multer = require('multer');
 const xl_files = path.join(__dirname, './../public/xl-files');
 const export_xl = path.join(__dirname, './../public/export-xl');
 const export_pdf = path.join(__dirname, './../public/pdf-export');
+const thumbnail_path = path.join(__dirname, './../public/thumbnail');
+const Healper = require("./Healper");
 const ejs = require('ejs');
 const mongodb = require('mongodb');
 const readXlsxFile = require('read-excel-file/node');
@@ -13,6 +15,7 @@ const xlsx = require('xlsx');
 const nodemailer = require('nodemailer');
 const pdf = require("pdf-creator-node");
 const moment = require('moment-timezone');
+const mongoose = require('mongoose');
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -27,7 +30,30 @@ function currentDateTime(t) {
     return [`${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}-${now.getMilliseconds()}`, ex];
 }
 
-
+async function deleteIs(id) {
+    throw new Error('deleteIs');
+    try {
+        return await UsersPostModel.deleteOne({ _id: new mongodb.ObjectId(id) });
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+async function updateIs(id, data) {
+    throw new Error('updateIs');
+    try {
+        return await UsersPostModel.updateOne({ _id: new mongodb.ObjectId(id) }, { $set: data });
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+async function findData(id) {
+    throw new Error('findData');
+    try {
+        return await UsersPostModel.findById({ _id: new mongodb.ObjectId(id) });
+    } catch (error) {
+        throw new Error('findData');
+    }
+}
 async function ImportUserPostExcel(req, resp) {
     try {
         if (req.files) {
@@ -235,38 +261,74 @@ async function DeletePostById(req, resp) {
 
 
 async function SaveUsersPost(req, resp) {
-    let { user, title, type, content } = req.body;
+    let { user, title, content } = req.body;
+    var thumbnail_path_and_name = '', saveid = 0;
     try {
-        let NewPost = new UsersPostModel({
+        const newPost = new UsersPostModel({
             userid: user,
             title: title,
-            type: type,
+            type: 0,
             content: content,
-        }).save(function (err, result) {
-            if (err) return resp.status(200).json({ "status": 400, "message": "Failed to save..!!", "error": err });
-            return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved.", "error": '', 'result': result });
         });
+
+        const savedPost = await newPost.save();
+        saveid = savedPost._id;
+        if (req.files) {
+            let fileIs = req.files.thumphoto;
+            let file_name = `${currentDateTime(fileIs.name)[0]}.${currentDateTime(fileIs.name)[1]}`;
+            thumbnail_path_and_name = `${thumbnail_path}/${file_name}`;
+            await fileIs.mv(`${thumbnail_path}/${file_name}`, function (err) {
+                if (err) {
+                    throw new Error(err);
+                }
+            });
+            const update = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(saveid) }, { "thumnail": file_name, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') }, { new: true });
+            return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved and file updated.", "error": false, 'result': update });
+        } else {
+            return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved.", "error": false, 'result': savedPost });
+        }
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
+        await UsersPostModel.deleteOne({ _id: new mongodb.ObjectId(saveid) })
+        await Healper.DeleteFile(thumbnail_path_and_name);
+        let m = thumbnail_path_and_name == "" ? "Failed..!! data has been deleted!" : "Failed..!! data and file has been deleted!";
+        return resp.status(500).json({ status: 500, "message": m, "error": error.message });
     }
 }
 
 
 async function UpdateUserPost(req, resp) {
-    let { rowid, userid, title, type, content } = req.body;
-    let dataObj, total;
+    let { rowid, userid, title, content } = req.body;
+    let dataObj, total, olddata;
+    var thumbnail_path_and_name = '';
     try {
-        dataObj = { 'userid': userid, 'title': title, 'type': type, 'content': content, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') };
+        dataObj = { 'userid': userid, 'title': title, 'content': content, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') };
         total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) }).countDocuments();
         if (total <= 0) {
             return resp.status(200).json({ "status": 400, "message": "Record not found.", "error": '', 'result': '', 'total': total });
         }
-        let update = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(rowid) }, { $set: dataObj }, { new: true, useFindAndModify: false });
-
-        if (!update) return resp.status(200).json({ "status": 400, "message": "Failed to update..!!", "error": update });
-        return resp.status(200).json({ "status": 200, "message": "Post has been successfully updated.", "error": '', 'result': update, 'total': total });
+        olddata = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) });
+        olddata = olddata[0]
+        let _update = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(rowid) }, { $set: dataObj }, { new: true, useFindAndModify: false });
+        if (req.files) {
+            let fileIs = req.files.thumphoto;
+            let file_name = `${currentDateTime(fileIs.name)[0]}.${currentDateTime(fileIs.name)[1]}`;
+            thumbnail_path_and_name = `${thumbnail_path}/${file_name}`;
+            await fileIs.mv(`${thumbnail_path}/${file_name}`, function (err) {
+                if (err) {
+                    throw new Error(err);
+                }
+            });
+            const update_ = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(rowid) }, { "thumnail": file_name, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') }, { new: true });
+            let old_thumbnail_path_and_name = thumbnail_path + "/" + olddata.thumnail;
+            await Healper.DeleteFile(old_thumbnail_path_and_name);//delete old file
+            return resp.status(200).json({ "status": 200, "message": "Post has been successfully updated and file updated.", "error": false, 'result': update_ });
+        } else {
+            return resp.status(200).json({ "status": 200, "message": "Post has been successfully updated.", "error": '', 'result': _update, 'total': total });
+        }
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
+        await Healper.DeleteFile(thumbnail_path_and_name);//delete old file
+        let m = thumbnail_path_and_name == "" ? "Failed..!! failed to update!" : "Failed..!! failed to update and new file deleted!";
+        return resp.status(500).json({ status: 500, "message": m, "error": error.message });
     }
 }
 // https://www.grapecity.com/blogs/how-to-generate-excel-spreadsheets-in-nodejs
