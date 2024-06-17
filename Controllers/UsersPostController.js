@@ -127,6 +127,8 @@ async function UsersPostList(req, resp) {
                     { $unwind: '$user_field' },
                     {
                         "$project": {
+                            "thumnail": 1,
+                            "video_file": 1,
                             "_id": 1,
                             "userid": 1,
                             "title": 1,
@@ -144,24 +146,50 @@ async function UsersPostList(req, resp) {
             .exec();
         var totalDocs = parseInt(data[0].totalCount[0].total);
         let c = CalculatData(totalDocs, limit, page);
-        let resetdata = [];
+        let resetdata_is = [];
         let docsdata = data[0].result;
-        docsdata.forEach(element => {
-            resetdata.push(
-                {
-                    "_id": element._id,
-                    "userid": element.userid,
-                    "title": element.title,
-                    "type": element.type,
-                    "content": element.content,
-                    "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
-                    "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
-                    "user_field": element.user_field,
-                }
-            );
+
+        let filedata = new Promise((resolve, reject) => {
+            let resetdata = [];
+            try {
+                docsdata.forEach(async element => {
+                    let thumnailPath = path.join(__dirname, `./../public/thumbnail/${element.thumnail}`);
+                    let fdtl = await Healper.FileInfo(thumnailPath);
+                    fdtl['file_path'] = `${process.env.APP_URL}post-thumbnail/${element.thumnail}`;
+                    let video_filePath = path.join(__dirname, `./../public/video_file/${element.video_file}`);
+                    let fdtl__ = await Healper.FileInfo(video_filePath);
+                    fdtl__['file_path'] = `${process.env.APP_URL}post-videos/${element.video_file}`;
+                    resetdata.push(
+                        {
+                            thumnail_filedetails: fdtl,
+                            video_file_filedetails: fdtl__,
+                            "_id": element._id,
+                            "userid": element.userid,
+                            "title": element.title,
+                            "type": element.type,
+                            "content": element.content,
+                            "thumnail": element.thumnail,
+                            "video_file": element.video_file,
+                            "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
+                            "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                            "user_field": element.user_field,
+                        }
+                    );
+
+                });
+                resolve(resetdata);
+            } catch (error) {
+                reject(error.message);
+            }
         });
+        await filedata.then((datais) => {
+            resetdata_is = datais;
+        }).catch((error) => {
+            throw new Error(error);
+        });
+
         let res = {
-            docs: resetdata,
+            docs: resetdata_is,
             totalDocs: totalDocs,
             limit: limit,
             page: page,

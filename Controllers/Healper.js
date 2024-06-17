@@ -61,7 +61,7 @@ async function ReadFile(filePath, type) {
     }
 }
 
-function PaginationData(total, limit, page) {
+function PaginationData(data, total, limit, page) {
     try {
         var totalpage, nextPage, record_from, record_to, hasNextPage, hasPrevPage, prevPage, page_links, skip;
         skip = (page - 1) * limit;
@@ -101,7 +101,7 @@ function PaginationData(total, limit, page) {
                 page_links.push({ 'link': i, active: false });
             }
         }
-        return { 'totalpage': totalpage, 'nextPage': nextPage, 'record_from': record_from, 'record_to': record_to, 'hasNextPage': hasNextPage, 'hasPrevPage': hasPrevPage, 'prevPage': prevPage, 'page_links': page_links, total: total, current_page: page };
+        return { 'totalpage': totalpage, 'nextPage': nextPage, 'record_from': record_from, 'record_to': record_to, 'hasNextPage': hasNextPage, 'hasPrevPage': hasPrevPage, 'prevPage': prevPage, 'page_links': page_links, total: total, current_page: page, docs: data };
     } catch (error) {
         throw new Error(error.message);
     }

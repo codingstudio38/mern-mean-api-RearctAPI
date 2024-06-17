@@ -147,7 +147,7 @@ async function NodeJSAsynchronousFunctioan(req, resp) {
             .select({ _id: 1, name: 1, phone: 1, email: 1, photo: 1 })
             .countDocuments();
 
-        let pdata = Healper.PaginationData(total, limit, page);
+
         let filedata = new Promise((resolve, reject) => {
             let resetdata = [];
             listdata.forEach(async element => {
@@ -159,7 +159,7 @@ async function NodeJSAsynchronousFunctioan(req, resp) {
                         "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
                         "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
                     });
-                    resolve(resetdata)
+                    resolve(resetdata);
                 } catch (error) {
                     reject(error.message);
                 }
@@ -170,6 +170,7 @@ async function NodeJSAsynchronousFunctioan(req, resp) {
         }).catch((error) => {
             throw new Error(error);
         });
+        let pdata = Healper.PaginationData(data, total, limit, page);
         return resp.status(200).json({ "status": 200, "message": 'success', "data": data, pagination: pdata });
     } catch (error) {
         return resp.status(500).json({ "status": 500, "message": error.message, "data": false });
