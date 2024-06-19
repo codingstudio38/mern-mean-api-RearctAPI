@@ -7,6 +7,7 @@ const xl_files = path.join(__dirname, './../public/xl-files');
 const export_xl = path.join(__dirname, './../public/export-xl');
 const export_pdf = path.join(__dirname, './../public/pdf-export');
 const thumbnail_path = path.join(__dirname, './../public/thumbnail');
+const postvideo_path = path.join(__dirname, './../public/video_file');
 const Healper = require("./Healper");
 const ejs = require('ejs');
 const mongodb = require('mongodb');
@@ -30,30 +31,6 @@ function currentDateTime(t) {
     return [`${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}-${now.getMilliseconds()}`, ex];
 }
 
-async function deleteIs(id) {
-    throw new Error('deleteIs');
-    try {
-        return await UsersPostModel.deleteOne({ _id: new mongodb.ObjectId(id) });
-    } catch (error) {
-        throw new Error(error);
-    }
-}
-async function updateIs(id, data) {
-    throw new Error('updateIs');
-    try {
-        return await UsersPostModel.updateOne({ _id: new mongodb.ObjectId(id) }, { $set: data });
-    } catch (error) {
-        throw new Error(error);
-    }
-}
-async function findData(id) {
-    throw new Error('findData');
-    try {
-        return await UsersPostModel.findById({ _id: new mongodb.ObjectId(id) });
-    } catch (error) {
-        throw new Error('findData');
-    }
-}
 async function ImportUserPostExcel(req, resp) {
     try {
         if (req.files) {
@@ -515,6 +492,38 @@ async function ExportUserPostPDF(req, resp) {
 
 
 
+async function UpdatePostVideos(req, resp) {
+    let { postid } = req.body;
+    var new_file_path = '', old_file_name = '';
+    try {
+        if (postid.length < 24) return resp.status(200).json({ "status": 400, "message": "invalid id", 'result': [] });
+        const total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(postid) }).countDocuments();
+        if (total <= 0) {
+            return resp.status(200).json({ "status": 400, "message": "Post not found!", 'result': [] });
+        }
+        let postdata = await UsersPostModel.find({ '_id': new mongodb.ObjectId(postid) });
+        postdata = postdata[0];
+        old_file_name = postdata.video_file;
+        if (req.files) {
+            const fileIs = req.files.postvideo;
+            const file_name = `${currentDateTime(fileIs.name)[0]}.${currentDateTime(fileIs.name)[1]}`;
+            new_file_path = `${postvideo_path}/${file_name}`;
+            await fileIs.mv(`${postvideo_path}/${file_name}`, function (err) {
+                if (err) {
+                    throw new Error(err);
+                }
+            });
+            const update = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(postid) }, { "video_file": file_name, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') }, { new: true });
+            await Healper.DeleteFile(`${postvideo_path}/${old_file_name}`);
+            return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved and file updated.", "error": false, 'result': update });
+        } else {
+            return resp.status(200).json({ "status": 400, "message": "file not found!", 'result': [] });
+        }
 
+    } catch (error) {
+        await Healper.DeleteFile(new_file_path);
+        return resp.status(500).json({ status: 500, "message": 'Failed..!!', "error": error.message });
+    }
+}
 
-module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, SaveUsersPost, GetPostById, DeletePostById, UpdateUserPost, ExportUserPostPDF };
+module.exports = { ImportUserPostExcel, ExportUserPostExcel, UsersPostList, UsersPost, SendMail, SaveUsersPost, GetPostById, DeletePostById, UpdateUserPost, ExportUserPostPDF, UpdatePostVideos };
