@@ -65,7 +65,7 @@ async function ImportUserPostExcel(req, resp) {
 
 async function UsersPostList(req, resp) {
     try {
-        var { page, size, data, skip, limit } = req.query;
+        var { page, size, data, userid, skip, limit } = req.query;
         if (!page) {
             page = 1;
         }
@@ -84,6 +84,7 @@ async function UsersPostList(req, resp) {
         data = await UsersPostModel.aggregate().sort({ 'created_at': -1 })
             .facet({
                 result: [
+                    { $match: { userid: new mongodb.ObjectId(userid) } },
                     { $skip: skip },
                     { $limit: limit },
                     {
@@ -118,7 +119,11 @@ async function UsersPostList(req, resp) {
                         }
                     }
                 ],
-                totalCount: [{ $group: { _id: null, total: { $sum: 1 } } }]
+                totalCount: [
+                    { $match: { userid: new mongodb.ObjectId(userid) } },
+                    { $count: 'total' },
+                    //{ $group: { _id: null, total: { $sum: 1 } } }
+                ]
             })
             .exec();
         var totalDocs = parseInt(data[0].totalCount[0].total);
@@ -132,10 +137,10 @@ async function UsersPostList(req, resp) {
                 docsdata.forEach(async element => {
                     let thumnailPath = path.join(__dirname, `./../public/thumbnail/${element.thumnail}`);
                     let fdtl = await Healper.FileInfo(thumnailPath);
-                    fdtl['file_path'] = `${process.env.APP_URL}post-thumbnail/${element.thumnail}`;
+                    fdtl['file_path'] = `${process.env.APP_URL}post-thumbnail/${element.thumnail ? element.thumnail : ''}`;
                     let video_filePath = path.join(__dirname, `./../public/video_file/${element.video_file}`);
                     let fdtl__ = await Healper.FileInfo(video_filePath);
-                    fdtl__['file_path'] = `${process.env.APP_URL}post-videos/${element.video_file}`;
+                    fdtl__['file_path'] = `${process.env.APP_URL}post-videos/${element.video_file ? element.video_file : ''}`;
                     resetdata.push(
                         {
                             thumnail_filedetails: fdtl,
@@ -184,7 +189,7 @@ async function UsersPostList(req, resp) {
         }
         return resp.status(200).json({ "status": 200, "message": "Data successfully fetched.", "list": res });
     } catch (error) {
-        return resp.status(400).json({ "status": 400, "message": "Failed..!!", "error": error.message });
+        return resp.status(500).json({ "status": 400, "message": "Failed..!!", "error": error.message });
     }
 }
 
