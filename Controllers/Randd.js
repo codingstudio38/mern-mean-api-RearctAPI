@@ -57,8 +57,14 @@ async function FileRD(req, resp) {
 
 async function NodeJSStreams(req, resp) {
     try {
+        let { watch } = req.query;
+        let total = 0, data = {};
+        if (!watch) return resp.status(200).json({ "status": 200, "message": "video id required!", "data": false });
+        total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(watch) }).countDocuments();
+        if (total <= 0) return resp.status(200).json({ "status": 200, "message": "file not exists!!", "data": false });
+        data = await UsersPostModel.find({ '_id': new mongodb.ObjectId(watch) });
         let filepath = '', filedata = '', FileSize = 0, FileExists = false, FileType = '';
-        filepath = path.join(__dirname, './../public/assets/video1.mkv');
+        filepath = path.join(__dirname, `./../public/video_file/${data[0].video_file}`);
         FileExists = await Healper.FileExists(filepath);
         if (!FileExists) return resp.status(200).json({ "status": 200, "message": "file not exists!!", "data": false });
         const getFileInfo = await Healper.FileInfo(filepath);

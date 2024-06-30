@@ -17,6 +17,7 @@ const nodemailer = require('nodemailer');
 const pdf = require("pdf-creator-node");
 const moment = require('moment-timezone');
 const mongoose = require('mongoose');
+
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -81,8 +82,9 @@ async function UsersPostList(req, resp) {
         page = parseInt(page);
         limit = parseInt(size);
         skip = (page - 1) * limit;
-        data = await UsersPostModel.aggregate().sort({ 'created_at': -1 })
-            .facet({
+        let query = {};
+        if (userid !== "") {
+            query = {
                 result: [
                     { $match: { userid: new mongodb.ObjectId(userid) } },
                     { $skip: skip },
@@ -122,9 +124,52 @@ async function UsersPostList(req, resp) {
                 totalCount: [
                     { $match: { userid: new mongodb.ObjectId(userid) } },
                     { $count: 'total' },
-                    //{ $group: { _id: null, total: { $sum: 1 } } }
                 ]
-            })
+            };
+        } else {
+            query = {
+                result: [
+                    { $skip: skip },
+                    { $limit: limit },
+                    {
+                        $addFields: {
+                            userid: {
+                                $toObjectId: "$userid"
+                            }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'userid',
+                            foreignField: '_id',
+                            as: 'user_field',
+                        }
+                    },
+                    { $unwind: '$user_field' },
+                    {
+                        "$project": {
+                            "thumnail": 1,
+                            "video_file": 1,
+                            "_id": 1,
+                            "userid": 1,
+                            "title": 1,
+                            "type": 1,
+                            "content": 1,
+                            "created_at": 1,
+                            'updated_at': 1,
+                            "user_field.name": 1,
+                            "user_field.photo": 1
+                        }
+                    }
+                ],
+                totalCount: [
+                    { $count: 'total' },
+                ]
+            };
+        }
+        data = await UsersPostModel.aggregate().sort({ 'created_at': -1 })
+            .facet(query)
             .exec();
         var totalDocs = parseInt(data[0].totalCount[0].total);
         let c = CalculatData(totalDocs, limit, page);
@@ -141,12 +186,16 @@ async function UsersPostList(req, resp) {
                     let video_filePath = path.join(__dirname, `./../public/video_file/${element.video_file}`);
                     let fdtl__ = await Healper.FileInfo(video_filePath);
                     fdtl__['file_path'] = `${process.env.APP_URL}post-videos/${element.video_file ? element.video_file : ''}`;
+                    let user_filePath = path.join(__dirname, `./../public/users/${element.user_field.photo}`);
+                    let user_file = await Healper.FileInfo(user_filePath);
+                    user_file['file_path'] = `${process.env.APP_URL}users-file/${element.user_field.photo ? element.user_field.photo : ''}`;
                     resetdata.push(
                         {
                             thumnail_filedetails: fdtl,
                             video_file_filedetails: fdtl__,
                             "_id": element._id,
                             "userid": element.userid,
+                            "user_filedetails": user_file,
                             "title": element.title,
                             "type": element.type,
                             "content": element.content,
@@ -244,13 +293,59 @@ async function UsersPost(req, resp) {
 
 async function GetPostById(req, resp) {
     let { rowid } = req.params;//req.query;
+    let user = {}, total_user = 0, data = {}, total = 0;
     try {
-        let total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) }).countDocuments()
-        let data = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) });
+        total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) }).countDocuments()
+        data = await UsersPostModel.find({ '_id': new mongodb.ObjectId(rowid) });
         if (total > 0) {
-            data = data[0];
-        } else {
-            data = {};
+            data = {
+                _id: data[0]._id,
+                userid: data[0].userid,
+                title: data[0].title,
+                type: data[0].type,
+                thumnail: data[0].thumnail,
+                video_file: data[0].video_file,
+                content: data[0].content,
+                created_at: data[0].created_at,
+                updated_at: data[0].updated_at,
+                __v: data[0].__v
+            };
+            let thumnailPath = path.join(__dirname, `./../public/thumbnail/${data.thumnail}`);
+            let fdtl = await Healper.FileInfo(thumnailPath);
+            fdtl['file_path'] = `${process.env.APP_URL}post-thumbnail/${data.thumnail ? data.thumnail : ''}`;
+
+            let video_filePath = path.join(__dirname, `./../public/video_file/${data.video_file}`);
+            let fdtl__ = await Healper.FileInfo(video_filePath);
+            fdtl__['file_path'] = `${process.env.APP_URL}post-videos/${data.video_file ? data.video_file : ''}`;
+
+            data['thumnail_filedetails'] = fdtl;
+            data['video_file_filedetails'] = fdtl__;
+
+            total_user = await UsersModel.find({ '_id': new mongodb.ObjectId(data.userid) }).countDocuments();
+            user = await UsersModel.find({ '_id': new mongodb.ObjectId(data.userid) });
+
+            if (total_user > 0) {
+                user = user[0];
+                let user_filePath = path.join(__dirname, `./../public/users/${user.photo}`);
+                let user_file = await Healper.FileInfo(user_filePath);
+                user_file['file_path'] = `${process.env.APP_URL}users-file/${user.photo ? user.photo : ''}`;
+                data['user_field'] = {
+                    "name": user.name,
+                    "photo": user.photo
+                };
+                data['user_filedetails'] = user_file;
+            } else {
+                data['user_field'] = {
+                    "name": "",
+                    "photo": ""
+                };
+                data['user_filedetails'] = {
+                    "filetype_st": "",
+                    "filetype": "",
+                    "filesize": "",
+                    "file_path": ""
+                };
+            }
         }
         return resp.status(200).json({ "status": 200, "message": "Success", "error": '', 'result': data, "total": total });
     } catch (error) {
@@ -273,14 +368,15 @@ async function DeletePostById(req, resp) {
 async function SaveUsersPost(req, resp) {
     let { user, title, content } = req.body;
     var thumbnail_path_and_name = '', saveid = 0;
+    // const session = await mongoose.startSession();
     try {
+        // session.startTransaction();
         const newPost = new UsersPostModel({
             userid: user,
             title: title,
             type: 0,
             content: content,
         });
-
         const savedPost = await newPost.save();
         saveid = savedPost._id;
         if (req.files) {
@@ -293,11 +389,16 @@ async function SaveUsersPost(req, resp) {
                 }
             });
             const update = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(saveid) }, { "thumnail": file_name, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') }, { new: true });
+            // await session.commitTransaction();
+            // session.endSession();
             return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved and file updated.", "error": false, 'result': update });
         } else {
+            // await session.commitTransaction();
+            // session.endSession();
             return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved.", "error": false, 'result': savedPost });
         }
     } catch (error) {
+        // await session.abortTransaction();
         await UsersPostModel.deleteOne({ _id: new mongodb.ObjectId(saveid) })
         await Healper.DeleteFile(thumbnail_path_and_name);
         let m = thumbnail_path_and_name == "" ? "Failed..!! data has been deleted!" : "Failed..!! data and file has been deleted!";
