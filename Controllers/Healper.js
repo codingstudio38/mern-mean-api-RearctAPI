@@ -121,11 +121,12 @@ function PaginationData(data, total, limit, page) {
 async function getIPAddress() {
     const networkInterfaces = os.networkInterfaces();
     let ipAddress = '';
-
+    // console.log('networkInterfaces', networkInterfaces)
     for (const interfaceName in networkInterfaces) {
         const interfaces = networkInterfaces[interfaceName];
-
+        // console.log('interfaces', interfaces)
         for (const iface of interfaces) {
+            // console.log('iface', iface);
             if (iface.family === 'IPv4' && !iface.internal) {
                 ipAddress = iface.address;
                 break;
