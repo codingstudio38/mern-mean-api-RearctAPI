@@ -116,6 +116,9 @@ async function NodeJScluster(req, resp) {
 
 async function NodeJSPlayVideo(req, resp) {
     try {
+        // console.log(await Healper.getIPAddress());
+        // console.log(req.headers['x-forwarded-for']);
+        // console.log(req.connection.remoteAddress);
         let data = [];
         resp.render("video", data);
     } catch (error) {

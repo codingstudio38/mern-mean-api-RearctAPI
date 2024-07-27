@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const mime = require('mime');
+const os = require('os');
 async function FileExists(filePath) {
     try {
         if (filePath == "" || filePath == undefined || filePath == null) return false;
@@ -117,5 +118,25 @@ function PaginationData(data, total, limit, page) {
 //  fs.rename(filepath, `${dirPath}/newtest.txt`, (err) => {
 //     if (!err) console.log("file name is updated.");
 //  })
+async function getIPAddress() {
+    const networkInterfaces = os.networkInterfaces();
+    let ipAddress = '';
 
-module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData };
+    for (const interfaceName in networkInterfaces) {
+        const interfaces = networkInterfaces[interfaceName];
+
+        for (const iface of interfaces) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                ipAddress = iface.address;
+                break;
+            }
+        }
+
+        if (ipAddress) {
+            break;
+        }
+    }
+
+    return ipAddress;
+}
+module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData, getIPAddress };
