@@ -62,10 +62,13 @@ async function ReadFile(filePath, type) {
     }
 }
 
-function PaginationData(data, total, limit, page) {
+function PaginationData(data, total, limitis, pageis) {
     try {
-        var totalpage, nextPage, record_from, record_to, hasNextPage, hasPrevPage, prevPage, page_links, skip;
+        var totalpage, nextPage, record_from, record_to, hasNextPage, hasPrevPage, prevPage, page_links, skip, currentPage = 0, previous = 0, lastPage = 0, page = 0, limit = 0;
+        page = parseInt(pageis);
+        limit = parseInt(limitis);
         skip = (page - 1) * limit;
+        previous = page - 1;
         // if (total % limit === 0) {
         //     totalpage = Math.ceil(total / limit) ;
         // } else {
@@ -73,7 +76,9 @@ function PaginationData(data, total, limit, page) {
         //     let num_ = num.split(".");
         //     totalpage = parseInt(num_[0]) + 1;
         // }
+        currentPage = page;
         totalpage = Math.ceil(total / limit);
+        lastPage = totalpage;
         nextPage = parseInt(page + 1);
         record_from = skip + 1;
         record_to = record_from + limit - 1;
@@ -85,11 +90,11 @@ function PaginationData(data, total, limit, page) {
             nextPage = nextPage;
         } else {
             hasNextPage = false;
-            nextPage = null;
+            nextPage = 0;
         }
         if (page <= 1) {
             hasPrevPage = false;
-            prevPage = null;
+            prevPage = 0;
         } else {
             hasPrevPage = true;
             prevPage = parseInt(page - 1);
@@ -102,7 +107,20 @@ function PaginationData(data, total, limit, page) {
                 page_links.push({ 'link': i, active: false });
             }
         }
-        return { 'totalpage': totalpage, 'nextPage': nextPage, 'record_from': record_from, 'record_to': record_to, 'hasNextPage': hasNextPage, 'hasPrevPage': hasPrevPage, 'prevPage': prevPage, 'page_links': page_links, total: total, current_page: page, docs: data };
+        let page_links_new = [];
+
+        for (let i = 1; i <= totalpage; i++) {
+            if (i >= currentPage - 2 && i <= currentPage + 2) {
+                if (i === currentPage) {
+                    page_links_new.push({ 'link': i, active: true });
+                } else {
+                    page_links_new.push({ 'link': i, active: false });
+                }
+            }
+        }
+
+
+        return { docs: data, 'totalpage': totalpage, 'nextPage': nextPage, 'record_from': record_from, 'record_to': record_to, 'hasNextPage': hasNextPage, 'hasPrevPage': hasPrevPage, 'prevPage': prevPage, total: total, current_page: page, page_links_new: page_links_new };
     } catch (error) {
         throw new Error(error.message);
     }

@@ -58,44 +58,25 @@ routeapp.get("/users/send-mail", Auth, UsersPostController.SendMail);
 
 routeapp.post("/save-user-chat", Auth, UsersChatController.SaveChat);
 
-routeapp.post(
-    "/update-read-status",
-    Auth,
-    UsersChatController.UpdateReadStatus
-);
+routeapp.post("/update-read-status", Auth, UsersChatController.UpdateReadStatus);
 
 routeapp.get("/chat-list", Auth, UsersChatController.ChatList);
 
 routeapp.get("/current-chat-user", Auth, UsersChatController.CurrentChatUser);
 
-routeapp.post(
-    "/get-no-of-unseen-chat",
-    Auth,
-    UsersChatController.getnoofunseenchat
-);
+routeapp.post("/get-no-of-unseen-chat", Auth, UsersChatController.getnoofunseenchat);
 
 routeapp.get("/find-chat", Auth, UsersChatController.FindChat);
 
-routeapp.post(
-    "/update-user-wsstatus",
-    Auth,
-    UsersChatController.UpdateUserWeStatus
-);
+routeapp.post("/update-user-wsstatus", Auth, UsersChatController.UpdateUserWeStatus);
 
 routeapp.get("/users/GetDataFromModal", Auth, UsersController.GetDataFromModal);
 
-routeapp.post(
-    "/users/number-of-active-user",
-    Auth,
-    UsersController.NumberofActiveUserWs
-);
+routeapp.post("/users/number-of-active-user", Auth, UsersController.NumberofActiveUserWs);
 
 routeapp.get("/NodeJsRequest", UsersChatController.NodeJsRequest);
 
-routeapp.get(
-    "/without-worker-threads",
-    UsersChatController.withoutworkerthreads
-);
+routeapp.get("/without-worker-threads", UsersChatController.withoutworkerthreads);
 
 routeapp.get("/with-worker-threads", UsersChatController.withworkerthreads);
 
@@ -126,10 +107,10 @@ routeapp.get("/nodejS-cluster", (req, resp) => {
     }
 });
 
-routeapp.get(
-    "/nodejS-AsynchronousFunctioan",
-    Randd.NodeJSAsynchronousFunctioan
-);
+routeapp.get("/nodejS-AsynchronousFunctioan", Randd.NodeJSAsynchronousFunctioan);
+
+
+routeapp.get("/nodejS-php-pagination", Randd.nodejSPHPpagination);
 
 routeapp.get("*", (req, res) => {
     res.status(404).json({ status: 404, message: "route not found..!!" });

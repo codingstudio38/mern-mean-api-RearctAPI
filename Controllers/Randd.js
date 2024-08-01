@@ -186,6 +186,51 @@ async function NodeJSAsynchronousFunctioan(req, resp) {
     }
 }
 
+async function nodejSPHPpagination(req, resp) {
+    try {
+        let { name = '', page = 1, limit = 5 } = req.query;
+        let queryis = {}, total = 0, from = 0;
+        page = parseInt(page) <= 0 ? 1 : parseInt(page);
+        limit = parseInt(limit) <= 0 ? 5 : parseInt(limit);
+        from = (page - 1) * limit;
+        if (name !== '') {
+            queryis = {
+                $and: [
+                    { title: { $regex: new RegExp(name), $options: "i" } },
+                ],
+            }
+        }
+
+        listdata = await UsersPostModel.find(
+            queryis
+        )
+            .select({ _id: 1, userid: 1, content: 1, title: 1, created_at: 1, updated_at: 1 })
+            .skip(from)
+            .limit(limit)
+            .sort({ title: 1 });
+
+        total = await UsersPostModel.find(queryis).countDocuments();
+        let docsdata = [];
+        listdata.forEach(element => {
+            docsdata.push(
+                {
+                    "_id": element._id,
+                    "userid": element.userid,
+                    "content": element.content,
+                    "title": element.title,
+                    "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
+                    "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                }
+            );
+        });
+
+        let pdata = Healper.PaginationData(docsdata, total, limit, page);
+        return resp.status(200).json({ "status": 200, "message": 'success', "data": pdata });
+    } catch (error) {
+        return resp.status(500).json({ "status": 500, "message": error.message, "data": false });
+    }
+}
+
 async function CallModelMethod(req, resp) {
     try {
         let { name = '' } = req.query;
@@ -198,4 +243,4 @@ async function CallModelMethod(req, resp) {
 }
 
 
-module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan, CallModelMethod, NodeJSPlayVideo };
+module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan, CallModelMethod, NodeJSPlayVideo, nodejSPHPpagination };
