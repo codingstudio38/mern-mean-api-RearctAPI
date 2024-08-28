@@ -39,7 +39,7 @@ UsersSchema.methods.findByName = async function (name) {
                 ],
             }
         }
-        return mongoose.model('users').find(queryis);
+        return await mongoose.model('users').find(queryis);
     } catch (error) {
         throw new Error(error);
     }

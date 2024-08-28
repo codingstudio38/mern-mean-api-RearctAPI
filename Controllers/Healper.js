@@ -61,6 +61,19 @@ async function ReadFile(filePath, type) {
         throw new Error(error.message);
     }
 }
+async function GetallFilelist(filePath) {
+    try {
+        fs.readdir(filePath, (err, files) => {
+            return files;
+            // files.forEach((item, index) => {
+            //     console.log(`file ${index} - ${item}`);
+            // })
+        })
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
 
 function PaginationData(data, total, limitis, pageis) {
     try {
@@ -158,4 +171,4 @@ async function getIPAddress() {
 
     return ipAddress;
 }
-module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData, getIPAddress };
+module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData, getIPAddress, GetallFilelist };
