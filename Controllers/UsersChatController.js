@@ -7,6 +7,7 @@ const chat_files = path.join(__dirname, "./../public/chat-files");
 const request = require("request");
 const { parentPort, Worker } = require("worker_threads");
 const moment = require("moment-timezone");
+const WebsocketController = require("./WebsocketController");
 function currentDateTime(t) {
     const now = new Date();
     let file_ = t.split(".");
@@ -34,6 +35,17 @@ async function updateIs(id, data) {
 
 async function SaveChat(req, resp) {
     try {
+        // let allwsclients = WebsocketController.clients;
+        // let data_ = {
+        //     type: "datafromws",
+        //     code: 4000,
+        //     msg: "hello from UsersChatController.js. New message has been seaved.",
+        //     clientid: 'userID',
+        // };
+
+        // for (let key in allwsclients) {
+        //     allwsclients[key].sendUTF(JSON.stringify(data_));
+        // }
         var { from_user, to_user, message } = req.body;
         if (!from_user) {
             return resp
