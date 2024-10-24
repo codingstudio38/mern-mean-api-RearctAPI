@@ -2,6 +2,35 @@ const path = require('path');
 const fs = require('fs');
 const mime = require('mime');
 const os = require('os');
+const CryptoJS = require('crypto-js');
+const data_secretKey = 'bc665a1f223dba15f5fbf5df08838647';  // 16-byte key
+const data_ivString = 'bc66-f223-dba1-8647-2345-fd45-dfg3';
+
+
+const data_decrypt = (encryptedData) => {
+    const iv = CryptoJS.enc.Utf8.parse(data_ivString);
+    const key = CryptoJS.enc.Utf8.parse(data_secretKey);
+    const decrypted = CryptoJS.AES.decrypt(encryptedData, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    });
+    const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
+    return decryptedText;
+};
+
+
+const data_encrypt = (data) => {
+    const iv = CryptoJS.enc.Utf8.parse(data_ivString);
+    const key = CryptoJS.enc.Utf8.parse(data_secretKey);
+    const encrypted = CryptoJS.AES.encrypt(data, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    });
+    return encrypted.toString();
+};
+
 async function FileExists(filePath) {
     try {
         if (filePath == "" || filePath == undefined || filePath == null) return false;
@@ -171,4 +200,4 @@ async function getIPAddress() {
 
     return ipAddress;
 }
-module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData, getIPAddress, GetallFilelist };
+module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData, getIPAddress, GetallFilelist, data_decrypt, data_encrypt };

@@ -60,6 +60,9 @@ async function NodeJSStreams(req, resp) {
         let { watch } = req.query;
         let total = 0, data = {};
         if (!watch) return resp.status(200).json({ "status": 200, "message": "video id required!", "data": false });
+
+        watch = Healper.data_decrypt(watch); //Healper.data_encrypt()
+
         total = await UsersPostModel.find({ '_id': new mongodb.ObjectId(watch) }).countDocuments();
         if (total <= 0) return resp.status(200).json({ "status": 200, "message": "file not exists!!", "data": false });
         data = await UsersPostModel.find({ '_id': new mongodb.ObjectId(watch) });
