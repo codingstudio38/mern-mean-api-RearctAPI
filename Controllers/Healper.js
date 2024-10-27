@@ -7,7 +7,7 @@ const data_secretKey = 'bc665a1f223dba15f5fbf5df08838647';  // 16-byte key
 const data_ivString = 'bc66-f223-dba1-8647-2345-fd45-dfg3';
 
 
-const data_decrypt = (encryptedData) => {
+const data_decrypt = async (encryptedData) => {
     const iv = CryptoJS.enc.Utf8.parse(data_ivString);
     const key = CryptoJS.enc.Utf8.parse(data_secretKey);
     const decrypted = CryptoJS.AES.decrypt(encryptedData, key, {
@@ -20,7 +20,7 @@ const data_decrypt = (encryptedData) => {
 };
 
 
-const data_encrypt = (data) => {
+const data_encrypt = async (data) => {
     const iv = CryptoJS.enc.Utf8.parse(data_ivString);
     const key = CryptoJS.enc.Utf8.parse(data_secretKey);
     const encrypted = CryptoJS.AES.encrypt(data, key, {
