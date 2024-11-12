@@ -8,6 +8,7 @@ const request = require("request");
 const { parentPort, Worker } = require("worker_threads");
 const moment = require("moment-timezone");
 const WebsocketController = require("./WebsocketController");
+const Healper = require("./Healper");
 function currentDateTime(t) {
     const now = new Date();
     let file_ = t.split(".");
@@ -35,6 +36,7 @@ async function updateIs(id, data) {
 
 async function SaveChat(req, resp) {
     try {
+        // await UsersChatModel.deleteMany({});
         // let allwsclients = WebsocketController.clients;
         // let data_ = {
         //     type: "datafromws",
@@ -57,12 +59,15 @@ async function SaveChat(req, resp) {
                 .status(200)
                 .json({ status: 400, message: "to_user required." });
         }
+        let intid = await UsersChatModel.find({}).countDocuments();
+        intid = intid + 1;
 
         let NewChat = new UsersChatModel({
             from_user: from_user,
             to_user: to_user,
             message: message,
             sender: from_user,
+            intid: intid,
             bookmark: false,
             read_status: 0,
         });
@@ -123,7 +128,7 @@ async function SaveChat(req, resp) {
     } catch (error) {
         return resp
             .status(400)
-            .json({ status: 400, message: "Failed..!!.", error: error });
+            .json({ status: 400, message: "Failed..!!.", error: error.message });
     }
 }
 
@@ -196,7 +201,11 @@ async function CurrentChatUser(req, resp) {
 
 async function ChatList(req, resp) {
     try {
-        var { from_user, to_user } = req.query;
+        var { from_user, to_user, page = 1, limit = 10, start = 0 } = req.query;
+        page = parseInt(page);
+        limit = parseInt(limit);
+        start = (page - 1) * limit;
+        // console.log(page, limit, start);
         if (!from_user) {
             return resp
                 .status(200)
@@ -231,6 +240,22 @@ async function ChatList(req, resp) {
             ],
         }).countDocuments();
 
+        let total_records = await UsersChatModel.find({
+            $or: [
+                {
+                    $and: [
+                        { from_user: new mongodb.ObjectId(from_user) },
+                        { to_user: new mongodb.ObjectId(to_user) },
+                    ],
+                },
+                {
+                    $and: [
+                        { from_user: new mongodb.ObjectId(to_user) },
+                        { to_user: new mongodb.ObjectId(from_user) },
+                    ],
+                },
+            ],
+        }).countDocuments();
         // let chat_data = await UsersChatModel.find({ $and: [{ 'from_user': new mongodb.ObjectId(from_user) }, { 'to_user': new mongodb.ObjectId(to_user) }], $or: [{ 'from_user': new mongodb.ObjectId(to_user) }, { 'to_user': new mongodb.ObjectId(from_user) }] });
         // {
         //     $or: [
@@ -238,7 +263,6 @@ async function ChatList(req, resp) {
         //         { $and: [{ 'from_user': new mongodb.ObjectId(to_user) }, { 'to_user': new mongodb.ObjectId(from_user) }] }
         //     ]
         // }
-
         let chat_data = await UsersChatModel.aggregate([
             {
                 $match: {
@@ -266,19 +290,25 @@ async function ChatList(req, resp) {
                     chat_file: 1,
                     bookmark: 1,
                     sender: 1,
+                    intid: 1,
                     created_at: 1,
                 },
             },
-            { $sort: { _id: 1 } },
-        ]);
+            { $sort: { intid: -1 } },
+            { $skip: start },
+            { $limit: limit },
 
+        ]);
+        let alldata = chat_data.sort((a, b) => a.intid - b.intid);
+        let pagination = Healper.PaginationData(alldata, total_records, limit, page);
         return resp
             .status(200)
             .json({
                 status: 200,
                 message: "Success",
                 total: total,
-                chat_data: chat_data,
+                // chat_data: alldata,
+                pagination: pagination,
             });
     } catch (error) {
         return resp
