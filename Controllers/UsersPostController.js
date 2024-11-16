@@ -17,13 +17,14 @@ const nodemailer = require('nodemailer');
 const pdf = require("pdf-creator-node");
 const moment = require('moment-timezone');
 const mongoose = require('mongoose');
+const { response } = require('express');
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     requireTLS: true,
-    auth: { user: 'onlinemessages0001@gmail.com', pass: 'uellirjjzdfpqyeo' }
+    auth: { user: 'onlinemessages0001@gmail.com', pass: 'kyirsizurahpppbh' }
 });
 function currentDateTime(t) {
     const now = new Date();
@@ -506,18 +507,36 @@ async function DeleteFile(filePath) {
 
 
 async function SendMail(req, resp) {
-    let mailOption = {
-        from: "onlinemessages0001@gmail.com",
-        to: "mondalbidyut38@gmail.com",
-        subject: 'Mail test',
-        text: "for test"
-    }
-    transporter.sendMail(mailOption, (error, info) => {
-        if (error) {
-            return resp.status(400).json(error);
+    try {
+        let datatime = moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
+        const templateData = {
+            name: "Bidyut",
+            otp: "12345"
+        };
+
+        const emailTemplate = await ejs.renderFile(path.join(__dirname, './../views/emailTemplate.ejs'), templateData);
+        let mailOption = {
+            from: "onlinemessages0001@gmail.com",
+            to: "mondalbidyut38@gmail.com",
+            subject: `Mail test || ${datatime}`,
+            // text: "for test",
+            html: emailTemplate,
+            attachments: [
+                {
+                    filename: '2024-5-2_19-40-38-453.pdf', // Name of the attachment
+                    path: path.join(__dirname, './../public/pdf-export/2024-5-2_19-40-38-453.pdf') // Path to the file
+                }
+            ]
         }
-        return resp.status(200).json(info);
-    });
+        transporter.sendMail(mailOption, (error, info) => {
+            if (error) {
+                return resp.status(200).json({ status: 400, message: 'failed!', result: error });
+            }
+            return resp.status(200).json({ status: 200, message: 'success', result: info });
+        });
+    } catch (error) {
+        return resp.status(200).json({ status: 400, message: error.message, result: '' });
+    }
 }
 
 

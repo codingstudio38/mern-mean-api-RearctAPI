@@ -54,7 +54,7 @@ routeapp.get("/export-xl/", Auth, UsersPostController.ExportUserPostExcel);
 
 routeapp.get("/export-pdf/", UsersPostController.ExportUserPostPDF);
 
-routeapp.get("/users/send-mail", Auth, UsersPostController.SendMail);
+routeapp.get("/users/send-mail", UsersPostController.SendMail);
 
 routeapp.post("/save-user-chat", Auth, UsersChatController.SaveChat);
 
