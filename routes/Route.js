@@ -112,6 +112,10 @@ routeapp.get("/nodejS-AsynchronousFunctioan", Randd.NodeJSAsynchronousFunctioan)
 
 routeapp.get("/nodejS-php-pagination", Randd.nodejSPHPpagination);
 
+routeapp.get("/pdf-export-test", Randd.ExportPDF);
+
+routeapp.get("/IframeTest", Randd.IframeTest);
+
 routeapp.get("*", (req, res) => {
     res.status(404).json({ status: 404, message: "route not found..!!" });
 });

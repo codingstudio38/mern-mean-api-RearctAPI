@@ -48,21 +48,24 @@
     <table border="1" id="customers">
         <thead>
             <tr>
-                <td>#Id</td>
+                <td>#Sl No.</td>
                 <td>Title</td>
                 <td>Content</td>
                 <td>Created At</td>
             </tr>
         </thead>
         <tbody>
-            <% posts.forEach(function(item){ %>
+
+
+            <% let i=1; posts.forEach(function(item){ %>
                 <tr>
-                    <td><%- item._id %></td>
+                    <td><%- i++ %></td>
                     <td><%- item.title %></td>
                     <td><%- item.content %></td>
                     <td><%- item.created_at %></td>
                 </tr>
                 <% }); %>
+
         </tbody>
         <!-- <tfoot>
             <tr>

@@ -5,7 +5,7 @@ const os = require('os');
 const CryptoJS = require('crypto-js');
 const data_secretKey = 'bc665a1f223dba15f5fbf5df08838647';  // 16-byte key
 const data_ivString = 'bc66-f223-dba1-8647-2345-fd45-dfg3';
-
+const moment = require('moment-timezone');
 
 const data_decrypt = async (encryptedData) => {
     const iv = CryptoJS.enc.Utf8.parse(data_ivString);
@@ -200,4 +200,20 @@ async function getIPAddress() {
 
     return ipAddress;
 }
-module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData, getIPAddress, GetallFilelist, data_decrypt, data_encrypt };
+
+async function DateTime(datetime, timezome, formart) {
+    try {
+        const full_date_time = moment(datetime).tz(timezome).format(formart == '' ? 'YYYY-MM-DD HH:mm:ss A' : formart);
+        const year = moment(datetime).tz(timezome).format('YYYY');
+        const month = moment(datetime).tz(timezome).format('MM');
+        const day = moment(datetime).tz(timezome).format('DD');
+        const hours = moment(datetime).tz(timezome).format('HH');
+        const minutes = moment(datetime).tz(timezome).format('mm');
+        const second = moment(datetime).tz(timezome).format('ss');
+        return { 'full_date_time': full_date_time, 'year': year, 'month': month, 'day': day, 'hours': hours, 'minutes': minutes, 'second': second };
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+module.exports = { FileExists, DeleteFile, FileInfo, ReadFile, PaginationData, getIPAddress, GetallFilelist, data_decrypt, data_encrypt, DateTime };

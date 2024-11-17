@@ -26,6 +26,13 @@ const transporter = nodemailer.createTransport({
     auth: { user: 'onlinemessages0001@gmail.com', pass: 'uellirjjzdfpqyeo' }
 });
 
+function currentDateTime(t) {
+    const now = new Date();
+    let file_ = t.split(".");
+    let ex = file_[file_.length - 1];
+    return [`${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}-${now.getMilliseconds()}`, ex];
+}
+
 async function FileRD(req, resp) {
     try {
         if (req.files) {
@@ -246,4 +253,136 @@ async function CallModelMethod(req, resp) {
 }
 
 
-module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan, CallModelMethod, NodeJSPlayVideo, nodejSPHPpagination };
+async function ExportPDF(req, resp) {
+    try {
+        let { title = '' } = req.query;
+
+        let data, html, posts, pdfoptions, pdfoutput, filename, filePath;
+        let query = {};
+        if (title !== "") {
+            query = {
+                'title': { $regex: new RegExp(title), $options: "i" }
+            }
+        }
+        // console.log(moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss a'));
+        posts = await UsersPostModel.find(
+            query
+        );
+
+        let postset = [];
+        let filedata = new Promise((resolve, reject) => {
+            let resetdata = [];
+            try {
+                posts.forEach(async element => {
+                    resetdata.push(
+                        {
+                            "_id": element._id,
+                            "userid": element.userid,
+                            "title": element.title,
+                            "type": element.type,
+                            "content": element.content,
+                            "thumnail": element.thumnail,
+                            "video_file": element.video_file,
+                            "created_at": moment(element.created_at).format('YYYY-MM-DD HH:mm:ss'),
+                            "updated_at": element.updated_at == null ? null : moment(element.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                            "user_field": element.user_field,
+                        }
+                    );
+
+                });
+                resolve(resetdata);
+            } catch (error) {
+                reject(error.message);
+            }
+        });
+        await filedata.then((datais) => {
+            postset = datais;
+        }).catch((error) => {
+            throw new Error(error);
+        });
+        data = { "posts": postset };
+        return resp.render("pdfttem-new", data);
+        html = await ejs.renderFile(path.join(__dirname, "./../views/pdfttem.ejs"), data, "utf8");
+        // html = fs.readFileSync(path.join(__dirname, "./../views/pdfttem.html"), "utf8");
+        pdfoptions = {
+            // css: {
+            //     'thead': {
+            //         display: 'table-header-group',
+            //     },
+            // },
+            format: "A4",
+            orientation: "portrait",
+            border: "4mm",
+            header: {
+                height: "10mm",
+                contents: '<div style="text-align: center;">BIDYUT</div>'
+            },
+            footer: {
+                height: "10mm",
+                contents: {
+                    first: '<span style="color: black;">{{page}}</span>/<span>{{pages}}</span>',
+                    //2: 'Second Page', // Any page number is working. 1-based index
+                    default: '<span style="color: black;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
+                    last: '<span style="color: black;">{{page}}</span>/<span>{{pages}}</span>'
+                }
+            }
+        };
+        filename = `${currentDateTime("output.pdf")[0]}.${currentDateTime("output.pdf")[1]}`;
+        filePath = `${export_pdf}/${filename}`;
+        pdfoutput = {
+            html: html,
+            data: {
+                posts: posts,
+            },
+            path: filePath,//"./public/pdf-expor/" + filename,
+            type: "pdf", // "stream" || "buffer" || "" ("" defaults to pdf)
+        };
+        pdf.create(pdfoutput, pdfoptions).then((res) => {
+            // return resp.status(200).json({ status: 200, 'pdffile': res, 'filePath': filePath, message: 'success' });
+            if (fs.existsSync(`${filePath}`)) {
+                resp.set({
+                    "Content-Type": "application/pdf",
+                    "Content-Length": html.length
+                })
+                return resp.sendFile(filePath);// for preview
+                // return resp.download(filePath, filename,
+                //     (err) => {
+                //         if (err) {
+                //             return resp.status(200).json({
+                //                 status: 200,
+                //                 error: err.message,
+                //                 message: "Problem while downloading the file"
+                //             })
+                //         } else {
+                //             DeleteFile(filePath).then((resdata) => {
+                //                 // console.log(resdata);//after download response file will be deleted
+                //             })
+                //         }
+                //     });
+            } else {
+                resp.status(400).json({ status: 400, message: "Downloads directory not found", "download": filePath })
+            }
+        }).catch((error) => {
+            return resp.status(200).json({ status: 400, 'pdffile': '', message: error.message });
+        });
+        // console.log(html);
+
+    } catch (error) {
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
+    }
+}
+
+async function IframeTest(req, resp) {
+    try {
+        let { title = '' } = req.query;
+        let data = {};
+        return resp.render("test", data);
+
+    } catch (error) {
+        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
+    }
+}
+
+
+
+module.exports = { FileRD, NodeJSStreams, NodeJScluster, NodeJSAsynchronousFunctioan, CallModelMethod, NodeJSPlayVideo, nodejSPHPpagination, ExportPDF, IframeTest };
