@@ -255,7 +255,7 @@ async function CallModelMethod(req, resp) {
 
 async function ExportPDF(req, resp) {
     try {
-        let { title = '' } = req.query;
+        let { title = '', action = 'preview' } = req.query;
 
         let data, html, posts, pdfoptions, pdfoutput, filename, filePath;
         let query = {};
@@ -301,8 +301,10 @@ async function ExportPDF(req, resp) {
             throw new Error(error);
         });
         data = { "posts": postset };
-        return resp.render("pdfttem-new", data);
+        // return resp.render("pdfttem-new", data);
+
         html = await ejs.renderFile(path.join(__dirname, "./../views/pdfttem.ejs"), data, "utf8");
+
         // html = fs.readFileSync(path.join(__dirname, "./../views/pdfttem.html"), "utf8");
         pdfoptions = {
             // css: {
@@ -328,47 +330,45 @@ async function ExportPDF(req, resp) {
             }
         };
         filename = `${currentDateTime("output.pdf")[0]}.${currentDateTime("output.pdf")[1]}`;
+
         filePath = `${export_pdf}/${filename}`;
         pdfoutput = {
             html: html,
             data: {
                 posts: posts,
             },
-            path: filePath,//"./public/pdf-expor/" + filename,
-            type: "pdf", // "stream" || "buffer" || "" ("" defaults to pdf)
+            path: filePath,
+            type: action == 'create' ? "pdf" : action == 'download' ? 'buffer' : 'buffer', // "stream" || "buffer" || "pdf" ("" defaults to pdf)
         };
-        pdf.create(pdfoutput, pdfoptions).then((res) => {
-            // return resp.status(200).json({ status: 200, 'pdffile': res, 'filePath': filePath, message: 'success' });
-            if (fs.existsSync(`${filePath}`)) {
-                resp.set({
-                    "Content-Type": "application/pdf",
-                    "Content-Length": html.length
-                })
-                return resp.sendFile(filePath);// for preview
-                // return resp.download(filePath, filename,
-                //     (err) => {
-                //         if (err) {
-                //             return resp.status(200).json({
-                //                 status: 200,
-                //                 error: err.message,
-                //                 message: "Problem while downloading the file"
-                //             })
-                //         } else {
-                //             DeleteFile(filePath).then((resdata) => {
-                //                 // console.log(resdata);//after download response file will be deleted
-                //             })
-                //         }
-                //     });
-            } else {
-                resp.status(400).json({ status: 400, message: "Downloads directory not found", "download": filePath })
+
+        if (action == 'create') {
+            if (!fs.existsSync(export_pdf)) {
+                // await fs.mkdir(export_pdf, { recursive: true });
+                fs.mkdirSync(export_pdf);
             }
-        }).catch((error) => {
-            return resp.status(200).json({ status: 400, 'pdffile': '', message: error.message });
-        });
-        // console.log(html);
+            pdf.create(pdfoutput, pdfoptions).then((data) => {
+                if (fs.existsSync(`${filePath}`)) {
+                    return resp.status(200).json({ status: 200, message: "success", "download": `http://localhost:5000/pdf-files/${filename}` });
+                } else {
+                    resp.status(200).json({ status: 500, message: "Downloads directory not found", "download": '' })
+                }
+            }).catch((error) => {
+                return resp.status(200).json({ status: 500, 'pdffile': '', message: error.message });
+            });
+        } else if (action == 'download') {
+            const pdfBuffer = await pdf.create(pdfoutput, pdfoptions);
+            resp.setHeader("Content-Type", "application/pdf");
+            resp.setHeader("Content-Disposition", `attachment; filename="${filename}"`); // Use `attachment;` for download
+            return resp.send(pdfBuffer);
+        } else {
+            const pdfBuffer = await pdf.create(pdfoutput, pdfoptions);
+            resp.setHeader("Content-Type", "application/pdf");
+            resp.setHeader("Content-Disposition", `inline; filename="${filename}"`); // Use `attachment;` for download
+            return resp.send(pdfBuffer);
+        }
 
     } catch (error) {
-        return resp.status(400).json({ status: 400, "message": "Failed..!!", "error": error.message });
+        return resp.status(200).json({ status: 500, "message": "Failed..!!", "error": error.message });
     }
 }
 

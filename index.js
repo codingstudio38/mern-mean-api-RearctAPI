@@ -45,6 +45,7 @@ try {
     app.use("/assets", express.static("./public/assets/"));
     app.use("/post-thumbnail", express.static("./public/thumbnail/"));
     app.use("/post-videos", express.static("./public/video_file/"));
+    app.use("/pdf-files", express.static("./public/pdf-export/"));
     app.use(require("./routes/Route"));
     app.listen(PORT, () => {
         console.log(`node server running on :http://localhost:${process.env.PORT} `);
