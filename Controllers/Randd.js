@@ -303,7 +303,7 @@ async function ExportPDF(req, resp) {
         data = { "posts": postset };
         // return resp.render("pdfttem-new", data);
 
-        html = await ejs.renderFile(path.join(__dirname, "./../views/pdfttem.ejs"), data, "utf8");
+        html = await ejs.renderFile(path.join(__dirname, "./../views/pdfttem-new.ejs"), data, "utf8");
 
         // html = fs.readFileSync(path.join(__dirname, "./../views/pdfttem.html"), "utf8");
         pdfoptions = {

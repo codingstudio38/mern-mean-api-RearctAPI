@@ -38,44 +38,98 @@
             color: white;
         }
 
+
+
+
+
+
+
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #header,
+        #footer {
+            width: 100%;
+            position: fixed;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        #header {
+            top: 0;
+        }
+
+        #footer {
+            bottom: 0;
+        }
+
+        #content {
+            margin: 40px 20px 40px 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: left;
+        }
+
         thead {
             display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
         }
     </style>
 </head>
 
 <body>
-    <table border="1" id="customers">
-        <thead>
-            <tr>
-                <td>#Sl No.</td>
-                <td>Title</td>
-                <td>Content</td>
-                <td>Created At</td>
-            </tr>
-        </thead>
-        <tbody>
-
-
-            <% let i=1; posts.forEach(function(item){ %>
+    <div id="header">Report Header</div>
+    <div id="content">
+        <table border="1" id="customers">
+            <thead>
                 <tr>
-                    <td><%- i++ %></td>
-                    <td><%- item.title %></td>
-                    <td><%- item.content %></td>
-                    <td><%- item.created_at %></td>
+                    <td>#Sl No.</td>
+                    <td>Title</td>
+                    <td>Content</td>
+                    <td>Created At</td>
                 </tr>
-                <% }); %>
+            </thead>
+            <tbody>
 
-        </tbody>
-        <!-- <tfoot>
-            <tr>
-                <td colspan="4">
 
-                </td>
-            </tr>
+                <% let i=1; posts.forEach(function(item){ %>
+                    <tr>
+                        <td><%- i++ %></td>
+                        <td><%- item.title %></td>
+                        <td><%- item.content %></td>
+                        <td><%- item.created_at %></td>
+                    </tr>
+                    <% }); %>
 
-        </tfoot> -->
-    </table>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>tfoot</td>
+                    <td>tfoot</td>
+                    <td>tfoot</td>
+                    <td>tfoot</td>
+                </tr>
+
+            </tfoot>
+        </table>
+    </div>
+    <div id="footer"></div>
 </body>
 
 </html>
