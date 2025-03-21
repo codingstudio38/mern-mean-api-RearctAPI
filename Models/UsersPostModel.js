@@ -10,6 +10,7 @@ const UsersPostSchema = new mongooseConnect.Schema({
     content: { type: String, required: false, trim: true, default: null },
     created_at: { type: Date, required: true, default: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') },//Date.now()new Date()
     updated_at: { type: Date, required: false, default: null },
+    video_status: { type: Number, required: false, default: 0 },
 });
 UsersPostSchema.plugin(mongoosePaginate);
 const UsersPostModel = mongooseConnect.model('users_posts', UsersPostSchema);

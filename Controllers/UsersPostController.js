@@ -131,6 +131,7 @@ async function UsersPostList(req, resp) {
         } else {
             query = {
                 result: [
+                    { $match: { video_file: { $ne: null } } },
                     { $skip: skip },
                     { $limit: limit },
                     {
@@ -161,7 +162,7 @@ async function UsersPostList(req, resp) {
                             "created_at": 1,
                             'updated_at': 1,
                             "user_field.name": 1,
-                            "user_field.photo": 1
+                            // "user_field.photo": 1
                         }
                     }
                 ],
@@ -170,7 +171,7 @@ async function UsersPostList(req, resp) {
                 ]
             };
         }
-        data = await UsersPostModel.aggregate().sort({ 'created_at': -1 })
+        data = await UsersPostModel.aggregate().sort({ 'video_status': -1 })
             .facet(query)
             .exec();
         var totalDocs = parseInt(data[0].totalCount[0].total);
@@ -639,7 +640,11 @@ async function UpdatePostVideos(req, resp) {
                     throw new Error(err);
                 }
             });
-            const update = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(postid) }, { "video_file": file_name, updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss') }, { new: true });
+            const update = await UsersPostModel.findByIdAndUpdate({ _id: new mongodb.ObjectId(postid) }, {
+                "video_file": file_name,
+                "video_status": 1,
+                updated_at: moment().tz(process.env.TIMEZONE).format('YYYY-MM-DD HH:mm:ss')
+            }, { new: true });
             await Healper.DeleteFile(`${postvideo_path}/${old_file_name}`);
             return resp.status(200).json({ "status": 200, "message": "Post has been successfully saved and file updated.", "error": false, 'result': update });
         } else {
